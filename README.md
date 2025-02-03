@@ -83,11 +83,5 @@ Kami menyambut kontribusi dari siapa saja! Ikuti langkah-langkah berikut untuk b
 ## 📄 Lisensi
 Proyek ini dilisensikan di bawah lisensi MIT - lihat [LICENSE](LICENSE) untuk detail lebih lanjut.
 
-## 📞 Kontak & Dukungan
-Jika Anda memiliki pertanyaan atau butuh bantuan, silakan hubungi:
-- 📧 Email: support@webkasir.com
-- 💬 Telegram: [@webkasir_support](https://t.me/webkasir_support)
-- 🐦 Twitter: [@webkasir](https://twitter.com/webkasir)
-
 ---
 Dibuat dengan ❤️ oleh [kikyrestu](https://github.com/kikyrestu)
