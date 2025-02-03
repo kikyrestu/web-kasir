@@ -1,0 +1,463 @@
+{% extends 'kasir/dashboard.html' %}
+{% load humanize %}
+
+{% block title %}Laporan{% endblock %}
+{% block page_title %}Laporan{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Laporan Penjualan -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Laporan Penjualan</h3>
+            </div>
+            <div class="card-body">
+                <form id="salesReportForm">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label>Dari Tanggal</label>
+                                <input type="date" class="form-control" id="startDate" name="start_date">
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label>Sampai Tanggal</label>
+                                <input type="date" class="form-control" id="endDate" name="end_date">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="mt-3">
+                    <h5>Ringkasan:</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info"><i class="fas fa-shopping-cart"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Penjualan</span>
+                                    <span class="info-box-number" id="totalSales">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success"><i class="fas fa-chart-line"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Profit Penjualan</span>
+                                    <span class="info-box-number" id="totalProfit">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-primary"><i class="fas fa-money-bill"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Profit Bersih</span>
+                                    <span class="info-box-number" id="netProfit">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Laporan Stok -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Laporan Stok</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="alert alert-warning">
+                            <h4><i class="fas fa-box"></i> Stok Menipis</h4>
+                            <p>{{ stok_menipis }} item</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-danger">
+                            <h4><i class="fas fa-exclamation-triangle"></i> Stok Habis</h4>
+                            <p>{{ stok_habis }} item</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="btn-group w-100">
+                        <button class="btn btn-success" id="exportExcel">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                        <button class="btn btn-danger" id="exportPDF">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Laporan Laba/Rugi -->
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Laporan Laba/Rugi</h3>
+            </div>
+            <div class="card-body">
+                <form id="profitLossForm">
+                    <div class="row mb-3">
+                        <div class="col-md-5">
+                            <label>Dari Tanggal</label>
+                            <input type="date" id="plStartDate" class="form-control" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label>Sampai Tanggal</label>
+                            <input type="date" id="plEndDate" class="form-control" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label>&nbsp;</label>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-search"></i> Tampilkan
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Tabel Laba/Rugi -->
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th colspan="2">Pendapatan</th>
+                        </tr>
+                        <tr>
+                            <td>Penjualan Kotor</td>
+                            <td class="text-right" id="grossSales">Rp 0</td>
+                        </tr>
+                        <tr>
+                            <td>Retur Penjualan</td>
+                            <td class="text-right" id="salesReturns">Rp 0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Penjualan Bersih</strong></td>
+                            <td class="text-right"><strong id="netSales">Rp 0</strong></td>
+                        </tr>
+                        
+                        <tr>
+                            <th colspan="2">Harga Pokok Penjualan</th>
+                        </tr>
+                        <tr>
+                            <td>Persediaan Awal</td>
+                            <td class="text-right" id="beginningInventory">Rp 0</td>
+                        </tr>
+                        <tr>
+                            <td>Pembelian</td>
+                            <td class="text-right" id="purchases">Rp 0</td>
+                        </tr>
+                        <tr>
+                            <td>Persediaan Akhir</td>
+                            <td class="text-right" id="endingInventory">Rp 0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total HPP</strong></td>
+                            <td class="text-right"><strong id="totalCogs">Rp 0</strong></td>
+                        </tr>
+                        
+                        <tr class="table-success">
+                            <td><strong>Laba Kotor</strong></td>
+                            <td class="text-right"><strong id="grossProfit">Rp 0</strong></td>
+                        </tr>
+                        
+                        <tr>
+                            <th colspan="2">Beban Operasional</th>
+                        </tr>
+                        <tr>
+                            <td>Beban Gaji</td>
+                            <td class="text-right" id="salaryExpense">Rp 0</td>
+                        </tr>
+                        <tr>
+                            <td>Beban Utilitas</td>
+                            <td class="text-right" id="utilityExpense">Rp 0</td>
+                        </tr>
+                        <tr>
+                            <td>Beban Lain-lain</td>
+                            <td class="text-right" id="otherExpense">Rp 0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Beban</strong></td>
+                            <td class="text-right"><strong id="totalExpense">Rp 0</strong></td>
+                        </tr>
+                        
+                        <tr class="table-info">
+                            <td><strong>Laba/Rugi Bersih</strong></td>
+                            <td class="text-right"><strong id="netProfit">Rp 0</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Laporan Arus Kas -->
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Laporan Arus Kas</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <label>Dari Tanggal</label>
+                        <input type="date" id="cfStartDate" class="form-control" required>
+                    </div>
+                    <div class="col-md-5">
+                        <label>Sampai Tanggal</label>
+                        <input type="date" id="cfEndDate" class="form-control" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label>&nbsp;</label>
+                        <button type="button" id="btnGenerateCashflow" class="btn btn-primary btn-block">
+                            <i class="fas fa-file-pdf"></i> Generate PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Laporan arus kas akan di-generate dalam format PDF yang mencakup:
+                    <ul>
+                        <li>Arus kas dari aktivitas operasi</li>
+                        <li>Arus kas dari aktivitas investasi</li>
+                        <li>Arus kas dari aktivitas pendanaan</li>
+                        <li>Perubahan kas bersih</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Grafik dan Analisis -->
+<div class="row">
+    <!-- Grafik Penjualan -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Grafik Penjualan</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="salesChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Produk Terlaris -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Produk Terlaris</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Produk</th>
+                                <th>Terjual</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topProducts">
+                            <!-- Data akan diisi melalui AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    console.log('Document ready');
+    
+    // Set tanggal default (range bulan Desember 2024)
+    $('#startDate').val('2024-12-01');
+    $('#endDate').val('2024-12-31');
+    
+    console.log('Default dates set:');
+    console.log('Start:', $('#startDate').val());
+    console.log('End:', $('#endDate').val());
+    
+    // Load data awal
+    loadSalesReport();
+    
+    // Handler form submit
+    $('#salesReportForm').on('submit', function(e) {
+        e.preventDefault();
+        loadSalesReport();
+    });
+
+    // Tambahkan handler untuk form laba rugi
+    $('#profitLossForm').on('submit', function(e) {
+        e.preventDefault();
+        loadProfitLossReport();
+    });
+
+    // Set tanggal default untuk form laba rugi saat halaman dimuat
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    $('#plStartDate').val(firstDay.toISOString().split('T')[0]);
+    $('#plEndDate').val(lastDay.toISOString().split('T')[0]);
+    
+    // Load laporan laba rugi awal
+    loadProfitLossReport();
+});
+
+function loadSalesReport() {
+    const startDate = $('#startDate').val();
+    const endDate = $('#endDate').val();
+    
+    console.log('\nLoading sales report...');
+    console.log('Start date:', startDate);
+    console.log('End date:', endDate);
+    
+    $.ajax({
+        url: "{% url 'kasir:get_sales_report' %}",
+        method: 'GET',
+        data: {
+            start_date: startDate,
+            end_date: endDate
+        },
+        beforeSend: function() {
+            $('#totalSales').text('Loading...');
+            $('#totalProfit').text('Loading...');
+            $('#netProfit').text('Loading...');
+        },
+        success: function(response) {
+            console.log('Response:', response);
+            if (response.total_sales > 0) {
+                $('#totalSales').text('Rp ' + formatNumber(response.total_sales));
+                $('#totalProfit').text('Rp ' + formatNumber(response.total_profit));
+                $('#netProfit').text('Rp ' + formatNumber(response.net_profit));
+                
+                // Tambahkan warna untuk laba bersih
+                if (response.net_profit >= 0) {
+                    $('#netProfit').removeClass('text-danger').addClass('text-success');
+                } else {
+                    $('#netProfit').removeClass('text-success').addClass('text-danger');
+                }
+            } else {
+                $('#totalSales').text('Rp 0');
+                $('#totalProfit').text('Rp 0');
+                $('#netProfit').text('Rp 0');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            $('#totalSales').text('Rp 0');
+            $('#totalProfit').text('Rp 0');
+            $('#netProfit').text('Rp 0');
+        }
+    });
+}
+
+function loadProfitLossReport() {
+    const startDate = $('#plStartDate').val();
+    const endDate = $('#plEndDate').val();
+    
+    console.log('\nLoading profit/loss report...');
+    console.log('Start date:', startDate);
+    console.log('End date:', endDate);
+    
+    $.ajax({
+        url: "{% url 'kasir:get_profit_loss_report' %}",
+        method: 'GET',
+        data: {
+            start_date: startDate,
+            end_date: endDate
+        },
+        beforeSend: function() {
+            // Set semua field ke "Loading..."
+            $('#grossSales').text('Loading...');
+            $('#salesReturns').text('Loading...');
+            $('#netSales').text('Loading...');
+            $('#beginningInventory').text('Loading...');
+            $('#purchases').text('Loading...');
+            $('#endingInventory').text('Loading...');
+            $('#totalCogs').text('Loading...');
+            $('#grossProfit').text('Loading...');
+            $('#salaryExpense').text('Loading...');
+            $('#utilityExpense').text('Loading...');
+            $('#otherExpense').text('Loading...');
+            $('#totalExpense').text('Loading...');
+            $('#netProfit').text('Loading...');
+        },
+        success: function(response) {
+            console.log('Response:', response);
+            
+            // Update semua field dengan data dari response
+            $('#grossSales').text('Rp ' + formatNumber(response.gross_sales));
+            $('#salesReturns').text('Rp ' + formatNumber(response.sales_returns));
+            $('#netSales').text('Rp ' + formatNumber(response.net_sales));
+            $('#beginningInventory').text('Rp ' + formatNumber(response.beginning_inventory));
+            $('#purchases').text('Rp ' + formatNumber(response.purchases));
+            $('#endingInventory').text('Rp ' + formatNumber(response.ending_inventory));
+            $('#totalCogs').text('Rp ' + formatNumber(response.total_cogs));
+            $('#grossProfit').text('Rp ' + formatNumber(response.gross_profit));
+            $('#salaryExpense').text('Rp ' + formatNumber(response.salary_expense));
+            $('#utilityExpense').text('Rp ' + formatNumber(response.utility_expense));
+            $('#otherExpense').text('Rp ' + formatNumber(response.other_expense));
+            $('#totalExpense').text('Rp ' + formatNumber(response.total_expense));
+            $('#netProfit').text('Rp ' + formatNumber(response.net_profit));
+            
+            // Tambahkan kelas warna untuk laba/rugi bersih
+            if (response.net_profit >= 0) {
+                $('#netProfit').removeClass('text-danger').addClass('text-success');
+            } else {
+                $('#netProfit').removeClass('text-success').addClass('text-danger');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            
+            // Reset semua field ke 0 jika terjadi error
+            $('#grossSales').text('Rp 0');
+            $('#salesReturns').text('Rp 0');
+            $('#netSales').text('Rp 0');
+            $('#beginningInventory').text('Rp 0');
+            $('#purchases').text('Rp 0');
+            $('#endingInventory').text('Rp 0');
+            $('#totalCogs').text('Rp 0');
+            $('#grossProfit').text('Rp 0');
+            $('#salaryExpense').text('Rp 0');
+            $('#utilityExpense').text('Rp 0');
+            $('#otherExpense').text('Rp 0');
+            $('#totalExpense').text('Rp 0');
+            $('#netProfit').text('Rp 0');
+        }
+    });
+}
+
+function formatNumber(num) {
+    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+</script>
+{% endblock %}

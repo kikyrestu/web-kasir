@@ -1,0 +1,11 @@
+Django==5.1.4
+import-export
+mysqlclient
+python-barcode
+pandas
+openpyxl
+xlsxwriter
+pywin32
+Pillow
+reportlab
+xhtml2pdf

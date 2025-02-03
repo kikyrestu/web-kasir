@@ -1,0 +1,680 @@
+{% extends 'kasir/dashboard.html' %}
+
+{% block title %}Pengaturan Sistem{% endblock %}
+{% block page_title %}Pengaturan Sistem{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Informasi Toko -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-store mr-2"></i>Informasi Toko</h3>
+            </div>
+            <div class="card-body">
+                <form id="storeInfoForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="text-center mb-4">
+                        {% if store.logo %}
+                            <img src="{{ store.logo.url }}" 
+                                 alt="Logo Toko" 
+                                 class="img-circle" 
+                                 style="max-width: 150px; height: auto;">
+                        {% else %}
+                            <img src="/static/img/default-store.png" 
+                                 alt="Logo Toko" 
+                                 class="img-circle" 
+                                 style="max-width: 150px; height: auto;">
+                        {% endif %}
+                        <div class="mt-2">
+                            <input type="file" id="logoInput" name="logo" class="d-none" accept="image/*">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="$('#logoInput').click()">
+                                <i class="fas fa-camera"></i> Ganti Logo
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-building mr-1"></i>Nama Toko</label>
+                        <input type="text" class="form-control" name="store_name" value="{{ store.name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt mr-1"></i>Alamat</label>
+                        <textarea class="form-control" name="address" rows="3" required>{{ store.address }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone mr-1"></i>Telepon</label>
+                        <input type="text" class="form-control" name="phone" value="{{ store.phone }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope mr-1"></i>Email</label>
+                        <input type="email" class="form-control" name="email" value="{{ store.email }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>Simpan Perubahan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pengaturan Struk -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-info card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-receipt mr-2"></i>Pengaturan Struk</h3>
+            </div>
+            <div class="card-body">
+                <form id="receiptSettingsForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label><i class="fas fa-heading mr-1"></i>Header Struk</label>
+                        <textarea class="form-control" name="receipt_header" rows="3">{{ receipt.header }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-paragraph mr-1"></i>Footer Struk</label>
+                        <textarea class="form-control" name="receipt_footer" rows="3">{{ receipt.footer }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-ruler-horizontal mr-1"></i>Ukuran Kertas</label>
+                        <select class="form-control" name="paper_size">
+                            <option value="58mm" {% if receipt.paper_size == '58mm' %}selected{% endif %}>58mm</option>
+                            <option value="80mm" {% if receipt.paper_size == '80mm' %}selected{% endif %}>80mm</option>
+                        </select>
+                    </div>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="showLogo" name="show_logo" 
+                               {% if receipt.show_logo %}checked{% endif %}>
+                        <label class="custom-control-label" for="showLogo">Tampilkan Logo pada Struk</label>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-print mr-1"></i>Printer Struk</label>
+                        <div class="input-group">
+                            <select class="form-control" name="receipt_printer" id="receipt_printer">
+                                <option value="">-- Pilih Printer --</option>
+                                {% for printer in printers %}
+                                    <option value="{{ printer.name }}" 
+                                            {% if receipt.printer_name == printer.name %}selected{% endif %}
+                                            {% if printer.is_default %}data-default="true"{% endif %}>
+                                        {{ printer.name }} {% if printer.is_default %}(Default){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-info" id="testPrint">
+                                    <i class="fas fa-print"></i> Test Print
+                                </button>
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            {% if printers %}
+                                Ditemukan {{ printers|length }} printer
+                            {% else %}
+                                Tidak ada printer yang terdeteksi
+                            {% endif %}
+                        </small>
+                    </div>
+                    <button type="submit" class="btn btn-info mt-3">
+                        <i class="fas fa-save mr-1"></i>Simpan Perubahan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pengaturan Sistem -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-success card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-cogs mr-2"></i>Pengaturan Sistem</h3>
+            </div>
+            <div class="card-body">
+                <form id="systemSettingsForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label><i class="fas fa-money-bill mr-1"></i>Mata Uang</label>
+                        <select class="form-control" name="currency">
+                            <option value="IDR" {% if system.currency == 'IDR' %}selected{% endif %}>Rupiah (IDR)</option>
+                            <option value="USD" {% if system.currency == 'USD' %}selected{% endif %}>Dollar (USD)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar mr-1"></i>Format Tanggal</label>
+                        <select class="form-control" name="date_format">
+                            <option value="DD/MM/YYYY" {% if system.date_format == 'DD/MM/YYYY' %}selected{% endif %}>DD/MM/YYYY</option>
+                            <option value="MM/DD/YYYY" {% if system.date_format == 'MM/DD/YYYY' %}selected{% endif %}>MM/DD/YYYY</option>
+                            <option value="YYYY-MM-DD" {% if system.date_format == 'YYYY-MM-DD' %}selected{% endif %}>YYYY-MM-DD</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-clock mr-1"></i>Zona Waktu</label>
+                        <select class="form-control" name="timezone">
+                            <option value="Asia/Jakarta" {% if system.timezone == 'Asia/Jakarta' %}selected{% endif %}>WIB (Asia/Jakarta)</option>
+                            <option value="Asia/Makassar" {% if system.timezone == 'Asia/Makassar' %}selected{% endif %}>WITA (Asia/Makassar)</option>
+                            <option value="Asia/Jayapura" {% if system.timezone == 'Asia/Jayapura' %}selected{% endif %}>WIT (Asia/Jayapura)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-exclamation-triangle mr-1"></i>Batas Stok Minimum</label>
+                        <input type="number" class="form-control" name="low_stock_threshold" 
+                               value="{{ system.low_stock_threshold }}" min="1">
+                    </div>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="emailNotif" name="enable_email_notifications"
+                               {% if system.enable_email_notifications %}checked{% endif %}>
+                        <label class="custom-control-label" for="emailNotif">Aktifkan Notifikasi Email</label>
+                    </div>
+                    <button type="submit" class="btn btn-success mt-3">
+                        <i class="fas fa-save mr-1"></i>Simpan Perubahan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup & Restore Database -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-warning card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-database mr-2"></i>Backup & Restore Database</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button class="btn btn-success btn-block mb-3" id="backupBtn">
+                            <i class="fas fa-download mr-1"></i>Backup Database
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <form id="restoreForm">
+                            {% csrf_token %}
+                            <div class="custom-file mb-3">
+                                <input type="file" class="custom-file-input" id="restoreFile" accept=".sql">
+                                <label class="custom-file-label" for="restoreFile">Pilih file SQL...</label>
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-block">
+                                <i class="fas fa-upload mr-1"></i>Restore Database
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    <strong>Perhatian!</strong> Proses restore akan mengganti semua data yang ada saat ini.
+                    Pastikan Anda telah membackup data sebelum melakukan restore.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pengaturan Modul Halaman -->
+    <div class="col-md-6 mb-4">
+        <div class="card card-success card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-th-large mr-2"></i>Pengaturan Modul Halaman
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-toggle="modal" data-target="#addModuleModal">
+                        <i class="fas fa-plus"></i> Tambah Modul
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px">No</th>
+                                <th>Nama Modul</th>
+                                <th>Icon</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moduleList">
+                            <!-- Default Modules -->
+                            <tr>
+                                <td>1</td>
+                                <td>PPOB</td>
+                                <td><i class="fas fa-mobile-alt"></i> fa-mobile-alt</td>
+                                <td>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input module-status" 
+                                               id="ppobStatus" data-module="ppob" 
+                                               {% if ppob_active %}checked{% endif %}>
+                                        <label class="custom-control-label" for="ppobStatus"></label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="btn btn-xs btn-info edit-module" data-module="ppob">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- Dynamic Modules will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tambah/Edit Modul -->
+    <div class="modal fade" id="addModuleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="moduleModalTitle">Tambah Modul Baru</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form id="moduleForm">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="module_id" id="moduleId">
+                        
+                        <div class="form-group">
+                            <label>Nama Modul</label>
+                            <input type="text" class="form-control" name="module_name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>URL Path</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">/</span>
+                                </div>
+                                <input type="text" class="form-control" name="module_path" 
+                                       placeholder="contoh: ppob" required>
+                            </div>
+                            <small class="text-muted">Path URL untuk mengakses modul ini</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Icon</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-icons"></i></span>
+                                </div>
+                                <input type="text" class="form-control" name="module_icon" 
+                                       placeholder="fa-mobile-alt" required>
+                            </div>
+                            <small class="text-muted">
+                                Gunakan nama icon dari 
+                                <a href="https://fontawesome.com/icons" target="_blank">Font Awesome</a>
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Urutan Menu</label>
+                            <input type="number" class="form-control" name="module_order" 
+                                   min="1" value="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Template</label>
+                            <select class="form-control" name="module_template">
+                                <option value="blank">Blank Page</option>
+                                <option value="table">Table Layout</option>
+                                <option value="form">Form Layout</option>
+                                <option value="custom">Custom Template</option>
+                            </select>
+                        </div>
+
+                        <div class="custom-control custom-switch mb-3">
+                            <input type="checkbox" class="custom-control-input" 
+                                   id="moduleActive" name="module_active" checked>
+                            <label class="custom-control-label" for="moduleActive">Aktifkan Modul</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Hak Akses</label>
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" 
+                                       id="accessAdmin" name="access_admin" checked>
+                                <label class="custom-control-label" for="accessAdmin">Admin</label>
+                            </div>
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" 
+                                       id="accessKasir" name="access_kasir">
+                                <label class="custom-control-label" for="accessKasir">Kasir</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan Modul</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Update logo preview when file selected
+    $('#logoInput').on('change', function(e) {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('.img-circle').attr('src', e.target.result);
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Store Info Form
+    $('#storeInfoForm').on('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: '{% url "kasir:update_store_info" %}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Informasi toko berhasil diperbarui',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            },
+            error: function() {
+                Swal.fire('Error', 'Gagal memperbarui informasi toko', 'error');
+            }
+        });
+    });
+
+    // Receipt Settings Form
+    $('#receiptSettingsForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '{% url "kasir:update_receipt_settings" %}',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Pengaturan struk berhasil diperbarui',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            },
+            error: function() {
+                Swal.fire('Error', 'Gagal memperbarui pengaturan struk', 'error');
+            }
+        });
+    });
+
+    // System Settings Form
+    $('#systemSettingsForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '{% url "kasir:update_system_settings" %}',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Pengaturan sistem berhasil diperbarui',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            },
+            error: function() {
+                Swal.fire('Error', 'Gagal memperbarui pengaturan sistem', 'error');
+            }
+        });
+    });
+
+    // Backup Database
+    $('#backupBtn').on('click', function() {
+        Swal.fire({
+            title: 'Memproses...',
+            text: 'Sedang membuat backup database',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+            url: '{% url "kasir:backup_database" %}',
+            type: 'POST',
+            data: {
+                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function(response) {
+                Swal.close();
+                // Buat link temporary untuk download
+                const a = document.createElement('a');
+                const url = window.URL.createObjectURL(new Blob([response]));
+                const timestamp = new Date().toISOString().slice(0,19).replace(/[:]/g, '-');
+                a.href = url;
+                a.download = `backup_database_${timestamp}.sql`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Database berhasil dibackup',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            },
+            error: function(xhr) {
+                Swal.fire('Error', 'Gagal membuat backup database', 'error');
+            }
+        });
+    });
+
+    // Restore Database
+    $('#restoreForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        if (!$('#restoreFile')[0].files[0]) {
+            Swal.fire('Error', 'Pilih file SQL backup terlebih dahulu', 'error');
+            return;
+        }
+
+        // Validasi file extension
+        const fileName = $('#restoreFile')[0].files[0].name;
+        if (!fileName.toLowerCase().endsWith('.sql')) {
+            Swal.fire('Error', 'File harus berformat .sql', 'error');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Peringatan',
+            text: 'Proses ini akan mengganti semua data yang ada. Lanjutkan?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Restore',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const formData = new FormData(this);
+                
+                Swal.fire({
+                    title: 'Memproses...',
+                    text: 'Sedang melakukan restore database',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: '{% url "kasir:restore_database" %}',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: 'Database berhasil direstore',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', response.message || 'Gagal melakukan restore', 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire('Error', 'Gagal melakukan restore database', 'error');
+                    }
+                });
+            }
+        });
+    });
+
+    // Update nama file yang dipilih
+    $('.custom-file-input').on('change', function() {
+        let fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').html(fileName || 'Pilih file SQL...');
+    });
+
+    $('#testPrint').click(function() {
+        const printerName = $('#receipt_printer').val();
+        if (!printerName) {
+            Swal.fire('Error', 'Pilih printer terlebih dahulu', 'error');
+            return;
+        }
+
+        // Tampilkan loading
+        Swal.fire({
+            title: 'Mengirim test print...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Kirim request test print
+        $.ajax({
+            url: '{% url "kasir:test_print" %}',  // Tambahkan URL ini di urls.py
+            type: 'POST',
+            data: {
+                printer_name: printerName,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    Swal.fire('Berhasil', response.message, 'success');
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            },
+            error: function(xhr) {
+                Swal.fire('Error', 'Gagal melakukan test print', 'error');
+            }
+        });
+    });
+
+    // Module Management
+    $(document).ready(function() {
+        // Handle Module Form Submit
+        $('#moduleForm').on('submit', function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: '{% url "kasir:save_module" %}',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    $('#addModuleModal').modal('hide');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Modul berhasil disimpan',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire('Error', xhr.responseJSON?.message || 'Gagal menyimpan modul', 'error');
+                }
+            });
+        });
+
+        // Handle Edit Module
+        $('.edit-module').click(function() {
+            const moduleId = $(this).data('module');
+            // Fetch module data
+            $.get(`{% url "kasir:get_module" %}?id=${moduleId}`, function(data) {
+                $('#moduleId').val(data.id);
+                $('input[name="module_name"]').val(data.name);
+                $('input[name="module_path"]').val(data.path);
+                $('input[name="module_icon"]').val(data.icon);
+                $('input[name="module_order"]').val(data.order);
+                $('select[name="module_template"]').val(data.template);
+                $('#moduleActive').prop('checked', data.active);
+                $('#accessAdmin').prop('checked', data.access_admin);
+                $('#accessKasir').prop('checked', data.access_kasir);
+                
+                $('#moduleModalTitle').text('Edit Modul');
+                $('#addModuleModal').modal('show');
+            });
+        });
+
+        // Handle Module Status Toggle
+        $('.module-status').change(function() {
+            const moduleId = $(this).data('module');
+            const status = $(this).prop('checked');
+            
+            $.ajax({
+                url: '{% url "kasir:toggle_module" %}',
+                type: 'POST',
+                data: {
+                    module_id: moduleId,
+                    status: status,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire('Error', 'Gagal mengubah status modul', 'error');
+                    // Kembalikan switch ke posisi sebelumnya
+                    $(this).prop('checked', !status);
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

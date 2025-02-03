@@ -1,0 +1,468 @@
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistem Kasir{% endblock %}</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- AdminLTE 3 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css">
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css" rel="stylesheet">
+    {% block extrahead %}{% endblock %}
+    <style>
+        .content-wrapper {
+            background-color: #f4f6f9;
+        }
+        .nav-link {
+            color: #343a40;
+        }
+        .card {
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+        }
+    </style>
+</head>
+<body class="sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <!-- Right navbar links -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a href="{% url 'logout' %}" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="/" class="brand-link text-center">
+                <span class="brand-text font-weight-light">LUMBUNG TEKNIK</span>
+            </a>
+
+            <div class="sidebar">
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                        <!-- Default menu items -->
+                        <li class="nav-item">
+                            <a href="{% url 'kasir:dashboard' %}" class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+
+                        <!-- Dynamic Modules -->
+                        {% for module in active_modules %}
+                            <li class="nav-item">
+                                <a href="{% url 'kasir:module' module.path %}" 
+                                   class="nav-link {% if request.path == module.url_path %}active{% endif %}">
+                                    <i class="nav-icon fas {{ module.icon }}"></i>
+                                    <p>{{ module.name }}</p>
+                                </a>
+                            </li>
+                        {% endfor %}
+                        
+                        <!-- Menu lainnya -->
+                        <li class="nav-item">
+                            <a href="{% url 'kasir:transaksi' %}" class="nav-link">
+                                <i class="nav-icon fas fa-cash-register"></i>
+                                <p>Transaksi Baru</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'kasir:produk' %}" class="nav-link">
+                                <i class="nav-icon fas fa-box"></i>
+                                <p>Produk</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'kasir:laporan' %}" class="nav-link">
+                                <i class="nav-icon fas fa-chart-bar"></i>
+                                <p>Laporan</p>
+                            </a>
+                        </li>
+                        <!-- Separator -->
+                        <li class="nav-header">PENGATURAN</li>
+
+                        <!-- Menu Settings -->
+                        <li class="nav-item">
+                            <a href="{% url 'kasir:settings' %}" class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                                <i class="nav-icon fas fa-cogs"></i>
+                                <p>
+                                    Pengaturan Sistem
+                                </p>
+                            </a>
+                        </li>
+                        <!-- Tambahkan di bagian sidebar menu -->
+                        <li class="nav-item">
+                            <a href="{% url 'kasir:kategori_produk' %}" class="nav-link {% if request.resolver_match.url_name == 'kategori_produk' %}active{% endif %}">
+                                <i class="nav-icon fas fa-tags"></i>
+                                <p>Kategori Produk</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+            </section>
+
+            <div class="content">
+                {% block content %}
+                <!-- Info boxes -->
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info"><i class="fas fa-shopping-cart"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Transaksi Hari Ini</span>
+                                <span class="info-box-number">{{ today_transactions }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-success"><i class="fas fa-money-bill-wave"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Pendapatan Hari Ini</span>
+                                <span class="info-box-number">Rp {{ today_income|floatformat:0|intcomma }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-primary"><i class="fas fa-chart-line"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Profit Hari Ini</span>
+                                <span class="info-box-number">Rp {{ today_profit|floatformat:0|intcomma }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-warning"><i class="fas fa-warehouse"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Modal Stok</span>
+                                <span class="info-box-number">Rp {{ total_modal_stok|floatformat:0|intcomma }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-danger"><i class="fas fa-chart-line"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Modal Terjual</span>
+                                <span class="info-box-number">Rp {{ total_modal_terjual|floatformat:0|intcomma }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tambahkan di bawah info boxes -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Filter & Export</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="filterForm" class="row align-items-end">
+                                    <div class="col-md-3">
+                                        <label>Dari Tanggal</label>
+                                        <input type="date" class="form-control" name="start_date" 
+                                               value="{{ start_date|date:'Y-m-d' }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Sampai Tanggal</label>
+                                        <input type="date" class="form-control" name="end_date" 
+                                               value="{{ end_date|date:'Y-m-d' }}">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-primary btn-block">
+                                            <i class="fas fa-filter"></i> Filter
+                                        </button>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" id="exportExcel" class="btn btn-success btn-block">
+                                            <i class="fas fa-file-excel"></i> Export Excel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grafik -->
+                <div class="row">
+                    <!-- Grafik Penjualan -->
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-chart-line mr-1"></i>
+                                    Grafik Penjualan
+                                </h3>
+                                <div class="card-tools">
+                                    <select class="form-control" id="salesPeriod">
+                                        <option value="7">7 Hari Terakhir</option>
+                                        <option value="30">30 Hari Terakhir</option>
+                                        <option value="90">90 Hari Terakhir</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="salesChart" style="height: 300px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Produk Terlaris -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-crown mr-1"></i>
+                                    Produk Terlaris
+                                </h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="products-list product-list-in-card pl-2 pr-2">
+                                    {% for product in top_products %}
+                                    <li class="item">
+                                        <div class="product-info">
+                                            <a href="javascript:void(0)" class="product-title">
+                                                {{ product.nama_barang }}
+                                                <span class="badge badge-info float-right">{{ product.total_terjual }} terjual</span>
+                                            </a>
+                                            <span class="product-description">
+                                                Rp {{ product.h_jual|floatformat:0 }}
+                                            </span>
+                                        </div>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Baris Kedua -->
+                <div class="row">
+                    <!-- Stok Menipis -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    Stok Menipis
+                                </h3>
+                            </div>
+                            <div class="card-body table-responsive p-0" style="height: 300px;">
+                                <table class="table table-head-fixed text-nowrap">
+                                    <thead>
+                                        <tr>
+                                            <th>Produk</th>
+                                            <th>Stok</th>
+                                            <th>Min. Stok</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in low_stock_items %}
+                                        <tr>
+                                            <td>{{ item.nama_barang }}</td>
+                                            <td>{{ item.stok }}</td>
+                                            <td>{{ item.stok_minimal }}</td>
+                                            <td>
+                                                <span class="badge badge-danger">Stok Menipis</span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaksi Terakhir -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-history mr-1"></i>
+                                    Transaksi Terakhir
+                                </h3>
+                            </div>
+                            <div class="card-body table-responsive p-0" style="height: 300px;">
+                                <table class="table table-head-fixed text-nowrap">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Waktu</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for trans in recent_transactions %}
+                                        <tr>
+                                            <td>{{ trans.id }}</td>
+                                            <td>{{ trans.tanggal|date:"d/m/Y H:i:s" }}</td>
+                                            <td>Rp {{ trans.total|floatformat:0 }}</td>
+                                            <td>
+                                                <span class="badge badge-success">Sukses</span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- REQUIRED SCRIPTS -->
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE JS -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Select2 -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        // Inisialisasi grafik penjualan
+        let salesChart;
+        
+        function initSalesChart() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Total Penjualan',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Grafik Penjualan'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + value.toLocaleString('id-ID');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Tambahkan console.log untuk debug
+        function loadSalesData(period = 7) {
+            $.ajax({
+                url: '{% url "kasir:get_sales_data" %}',
+                data: { days: period },
+                success: function(response) {
+                    console.log('Sales data:', response);  // Debug
+                    updateSalesChart(response);
+                },
+                error: function(xhr) {
+                    console.error('Error loading sales data:', xhr);
+                    Swal.fire('Error', 'Gagal memuat data penjualan', 'error');
+                }
+            });
+        }
+
+        // Fungsi untuk mengupdate grafik
+        function updateSalesChart(data) {
+            if (!salesChart) {
+                initSalesChart();
+            }
+
+            salesChart.data.labels = data.labels;
+            salesChart.data.datasets[0].data = data.values;
+            salesChart.update();
+        }
+
+        // Handler untuk perubahan periode
+        $('#salesPeriod').on('change', function() {
+            const period = $(this).val();
+            loadSalesData(period);
+        });
+
+        // Handler untuk form filter
+        $('#filterForm').on('submit', function(e) {
+            e.preventDefault();
+            loadSalesData($('#salesPeriod').val());
+        });
+
+        // Export handler
+        $('#exportExcel').on('click', function() {
+            const startDate = $('input[name="start_date"]').val();
+            const endDate = $('input[name="end_date"]').val();
+            
+            if (!startDate || !endDate) {
+                Swal.fire('Perhatian', 'Pilih rentang tanggal terlebih dahulu', 'warning');
+                return;
+            }
+
+            window.location.href = `{% url 'kasir:export_sales_report' %}?start_date=${startDate}&end_date=${endDate}`;
+        });
+
+        // Inisialisasi awal
+        initSalesChart();
+        loadSalesData();
+    });
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

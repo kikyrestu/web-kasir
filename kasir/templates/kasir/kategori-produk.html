@@ -1,0 +1,346 @@
+{% extends 'kasir/dashboard.html' %}
+
+{% block title %}Kategori Produk{% endblock %}
+{% block page_title %}Kategori Produk{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <!-- Form Tambah/Edit Kategori -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title" id="formTitle">Tambah Kategori</h3>
+            </div>
+            <div class="card-body">
+                <form id="kategoriForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="kategoriId" name="kategori_id">
+                    <div class="form-group">
+                        <label for="namaKategori">Nama Kategori</label>
+                        <input type="text" class="form-control" id="namaKategori" name="nama_kategori" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="deskripsi">Deskripsi</label>
+                        <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-secondary" id="btnBatal" style="display:none;">Batal</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- Tabel Kategori -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Daftar Kategori</h3>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Kategori</th>
+                            <th>Deskripsi</th>
+                            <th>Jumlah Produk</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for kategori in kategoris %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ kategori.nama }}</td>
+                            <td>{{ kategori.deskripsi|default:"-" }}</td>
+                            <td>{{ kategori.produk_count }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info btn-edit" 
+                                        data-id="{{ kategori.id }}"
+                                        data-nama="{{ kategori.nama }}"
+                                        data-deskripsi="{{ kategori.deskripsi|default:'' }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger btn-delete" 
+                                        data-id="{{ kategori.id }}"
+                                        data-nama="{{ kategori.nama }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">Tidak ada kategori</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tambahkan di bawah card form kategori -->
+<div class="card mt-3">
+    <div class="card-header">
+        <h3 class="card-title">Import Kategori</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <form id="importForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>File Excel Produk</label>
+                        <input type="file" class="form-control" name="file" accept=".xlsx,.xls" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Import Kategori dari Excel Produk</button>
+                    <button type="button" class="btn btn-success" id="downloadTemplate">
+                        Download Template
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Kategori -->
+<div class="modal fade" id="tambahKategoriModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Kategori</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formTambahKategori">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="namaKategori">Nama Kategori</label>
+                        <input type="text" class="form-control" id="namaKategori" name="nama" required>
+                    </div>
+                    <!-- Hapus field deskripsi karena tidak ada di model -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="btnSimpanKategori">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Kategori -->
+<div class="modal fade" id="editKategoriModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Kategori</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditKategori">
+                    {% csrf_token %}
+                    <input type="hidden" id="editKategoriId">
+                    <div class="form-group">
+                        <label for="editNamaKategori">Nama Kategori</label>
+                        <input type="text" class="form-control" id="editNamaKategori" name="nama" required>
+                    </div>
+                    <!-- Hapus field deskripsi karena tidak ada di model -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="btnUpdateKategori">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Fungsi untuk mendapatkan CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Handle form submission
+    $('#kategoriForm').on('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const kategoriId = $('#kategoriId').val();
+        const url = kategoriId ? `/kategori/${kategoriId}/update/` : '/kategori/add/';
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: response.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            },
+            error: function(xhr) {
+                Swal.fire('Error', xhr.responseJSON?.message || 'Terjadi kesalahan', 'error');
+            }
+        });
+    });
+
+    // Handle edit button
+    $('.btn-edit').click(function() {
+        const id = $(this).data('id');
+        const nama = $(this).data('nama');
+        const deskripsi = $(this).data('deskripsi');
+
+        $('#kategoriId').val(id);
+        $('#namaKategori').val(nama);
+        $('#deskripsi').val(deskripsi);
+        $('#formTitle').text('Edit Kategori');
+        $('#btnBatal').show();
+    });
+
+    // Handle delete button
+    $('.btn-delete').click(function() {
+        const id = $(this).data('id');
+        const nama = $(this).data('nama');
+
+        Swal.fire({
+            title: 'Hapus Kategori?',
+            text: `Anda yakin ingin menghapus kategori "${nama}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{% url 'kasir:hapus_kategori' %}",  // Gunakan nama URL baru
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    },
+                    error: function(xhr) {
+                        console.error('Error:', xhr.responseText);
+                        Swal.fire('Error', xhr.responseJSON?.message || 'Terjadi kesalahan', 'error');
+                    }
+                });
+            }
+        });
+    });
+
+    // Handle batal button
+    $('#btnBatal').click(function() {
+        $('#kategoriForm').trigger('reset');
+        $('#kategoriId').val('');
+        $('#formTitle').text('Tambah Kategori');
+        $(this).hide();
+    });
+
+    // Tambahkan handler untuk import
+    $('#importForm').on('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: '{% url "kasir:import_kategori_from_produk" %}',  // Tambahkan URL baru
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: response.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            },
+            error: function(xhr) {
+                Swal.fire('Error', xhr.responseJSON?.message || 'Terjadi kesalahan', 'error');
+            }
+        });
+    });
+
+    // Handler untuk download template
+    $('#downloadTemplate').click(function() {
+        window.location.href = '{% url "kasir:download_template" %}';
+    });
+
+    $('#btnSimpanKategori').on('click', function() {
+        const data = {
+            nama_kategori: $('#namaKategori').val(),
+            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+        };
+        
+        console.log('Data yang akan dikirim:', data);
+        
+        $.ajax({
+            url: '{% url "kasir:tambah_kategori" %}',
+            type: 'POST',
+            data: data,
+            success: function(response) {
+                $('#tambahKategoriModal').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: response.message,
+                    timer: 1500
+                }).then(() => {
+                    location.reload();
+                });
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: xhr.responseJSON?.message || 'Terjadi kesalahan'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,2105 @@
+{% extends 'kasir/dashboard.html' %}
+{% load humanize %}
+
+{% block title %}PPOB{% endblock %}
+{% block page_title %}PPOB{% endblock %}
+
+{% block content %}
+<!-- Saldo Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-wallet mr-2"></i>Informasi Saldo
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="info-box bg-gradient-success">
+                            <span class="info-box-icon"><i class="fas fa-money-bill-wave"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Saldo PPOB</span>
+                                <span class="info-box-number">Rp {{ saldo|default:"0"|intcomma }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <!-- Tombol untuk membuka modal -->
+                        <button type="button" class="btn btn-primary" onclick="openTambahSaldoModal()">
+                            <i class="fas fa-plus-circle mr-1"></i>Tambah Saldo
+                        </button>
+                        <button type="button" class="btn btn-info ml-2" onclick="openRiwayatSaldoModal()">
+                            <i class="fas fa-history mr-1"></i>Riwayat Saldo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row pertama untuk Pulsa, Paket Data, Token Listrik, PDAM -->
+<div class="row">
+    <!-- Pulsa -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-info">
+                <i class="fas fa-mobile"></i>
+            </span>
+            <div class="info-box-content">
+                <span class="info-box-text">Pulsa</span>
+                <button onclick="openPulsaModal()" class="btn btn-sm btn-info mt-2">
+                    <i class="fas fa-arrow-right"></i> Beli
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Paket Data -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-success">
+                <i class="fas fa-wifi"></i>
+            </span>
+            <div class="info-box-content">
+                <span class="info-box-text">Paket Data</span>
+                <button onclick="openPaketDataModal()" class="btn btn-sm btn-success mt-2">
+                    <i class="fas fa-arrow-right"></i> Beli
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Token Listrik -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-warning">
+                <i class="fas fa-bolt"></i>
+            </span>
+            <div class="info-box-content">
+                <span class="info-box-text">Token Listrik</span>
+                <button onclick="openTokenListrikModal()" class="btn btn-sm btn-warning mt-2">
+                    <i class="fas fa-arrow-right"></i> Beli
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PDAM -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-primary">
+                <i class="fas fa-tint"></i>
+            </span>
+            <div class="info-box-content">
+                <span class="info-box-text">PDAM</span>
+                <button onclick="openPDAMModal()" class="btn btn-sm btn-primary mt-2">
+                    <i class="fas fa-arrow-right"></i> Bayar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row kedua untuk Tarik Tunai, Transfer, dan E-Wallet -->
+<div class="row mt-4">
+    <!-- Tarik Tunai -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-danger">
+                <i class="fas fa-money-bill-wave"></i>
+            </span>
+            <div class="info-box-content">
+                <span class="info-box-text">Tarik Tunai</span>
+                <button onclick="openTarikTunaiModal()" class="btn btn-sm btn-danger mt-2">
+                    <i class="fas fa-arrow-right"></i> Tarik
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-info">
+                <i class="fas fa-exchange-alt"></i>
+            </span>
+            <div class="info-box-content">
+                <span class="info-box-text">Transfer</span>
+                <button onclick="openTransferModal()" class="btn btn-sm btn-info mt-2">
+                    <i class="fas fa-arrow-right"></i> Transfer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- E-Wallet -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-info">
+                <i class="fas fa-wallet"></i>
+            </span>
+            <div class="info-box-content">
+                <span class="info-box-text">E-Wallet</span>
+                <button onclick="openEWalletModal()" class="btn btn-sm btn-info mt-2">
+                    <i class="fas fa-arrow-right"></i> Top Up
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Saldo -->
+<div class="modal fade" id="modalTambahSaldo" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Saldo PPOB</h5>
+                <button type="button" class="close" onclick="closeTambahSaldoModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formTambahSaldo" onsubmit="return handleTambahSaldo(event)">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Nominal Saldo</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Rp</span>
+                            </div>
+                            <input type="number" class="form-control" name="nominal" required min="10000" max="999999999999" step="1">
+                        </div>
+                        <small class="form-text text-muted">Minimal Rp 10.000</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Keterangan</label>
+                        <textarea class="form-control" name="keterangan" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeTambahSaldoModal()">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Riwayat Saldo -->
+<div class="modal fade" id="modalRiwayatSaldo" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Riwayat Saldo PPOB</h5>
+                <button type="button" class="close" onclick="closeRiwayatSaldoModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Tipe</th>
+                                <th>Nominal</th>
+                                <th>Keterangan</th>
+                                <th>Saldo Akhir</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for history in saldo_history %}
+                            <tr>
+                                <td>{{ history.created_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <span class="badge badge-{{ history.type|yesno:'success,danger' }}">
+                                        {{ history.type|yesno:'Masuk,Keluar' }}
+                                    </span>
+                                </td>
+                                <td>Rp {{ history.amount|intcomma }}</td>
+                                <td>{{ history.description }}</td>
+                                <td>Rp {{ history.balance_after|intcomma }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">Belum ada riwayat saldo</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeRiwayatSaldoModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Pulsa -->
+<div class="modal fade" id="modalPulsa" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Beli Pulsa</h5>
+                <button type="button" class="close" onclick="closePulsaModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formPulsa" onsubmit="return handleBeliPulsa(event)">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Nomor Handphone</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">+62</span>
+                            </div>
+                            <input type="tel" class="form-control" name="phone" 
+                                   pattern="^8[1-9][0-9]{7,11}$" 
+                                   required
+                                   placeholder="81234567890">
+                        </div>
+                        <small class="form-text text-muted">Masukkan nomor tanpa awalan 0 atau +62</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nominal Pulsa</label>
+                        <select class="form-control" name="nominal" required>
+                            <option value="">Pilih nominal</option>
+                            <option value="5000">Rp 5.000</option>
+                            <option value="10000">Rp 10.000</option>
+                            <option value="15000">Rp 15.000</option>
+                            <option value="20000">Rp 20.000</option>
+                            <option value="25000">Rp 25.000</option>
+                            <option value="50000">Rp 50.000</option>
+                            <option value="100000">Rp 100.000</option>
+                            <option value="150000">Rp 150.000</option>
+                            <option value="200000">Rp 200.000</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Provider</label>
+                        <input type="text" class="form-control" name="provider" readonly>
+                        <small class="form-text text-muted">Provider akan terdeteksi otomatis</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePulsaModal()">Batal</button>
+                    <button type="submit" class="btn btn-primary">Beli</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Paket Data -->
+<div class="modal fade" id="modalPaketData" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Beli Paket Data</h5>
+                <button type="button" class="close" onclick="closePaketDataModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formPaketData" onsubmit="return handleBeliPaketData(event)">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Nomor Handphone</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">+62</span>
+                            </div>
+                            <input type="tel" class="form-control" name="phone" 
+                                   pattern="^8[1-9][0-9]{7,11}$" 
+                                   required
+                                   placeholder="81234567890">
+                        </div>
+                        <small class="form-text text-muted">Masukkan nomor tanpa awalan 0 atau +62</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Provider</label>
+                        <input type="text" class="form-control" name="provider" readonly>
+                        <small class="form-text text-muted">Provider akan terdeteksi otomatis</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pilih Paket</label>
+                        <select class="form-control" name="paket" required>
+                            <option value="">Pilih paket data</option>
+                            <optgroup label="Internet">
+                                <option value="1GB-7D-15000">1GB 7 Hari - Rp 15.000</option>
+                                <option value="2GB-7D-25000">2GB 7 Hari - Rp 25.000</option>
+                                <option value="3GB-30D-50000">3GB 30 Hari - Rp 50.000</option>
+                                <option value="5GB-30D-75000">5GB 30 Hari - Rp 75.000</option>
+                                <option value="10GB-30D-100000">10GB 30 Hari - Rp 100.000</option>
+                            </optgroup>
+                            <optgroup label="Combo (Internet + Telpon)">
+                                <option value="COMBO-S-35000">Combo S (2GB + 100 Menit) - Rp 35.000</option>
+                                <option value="COMBO-M-50000">Combo M (4GB + 200 Menit) - Rp 50.000</option>
+                                <option value="COMBO-L-75000">Combo L (6GB + 300 Menit) - Rp 75.000</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Harga</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Rp</span>
+                            </div>
+                            <input type="text" class="form-control" name="harga" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePaketDataModal()">Batal</button>
+                    <button type="submit" class="btn btn-success">Beli</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Token Listrik -->
+<div class="modal fade" id="modalTokenListrik" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Beli Token Listrik</h5>
+                <button type="button" class="close" onclick="closeTokenListrikModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formTokenListrik" onsubmit="return handleBeliToken(event)">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>ID Pelanggan / Nomor Meter</label>
+                        <input type="text" 
+                               class="form-control" 
+                               name="meter_number"
+                               pattern="[0-9]{11,12}"
+                               required
+                               placeholder="Contoh: 537320088xxx">
+                        <small class="form-text text-muted">Masukkan 11-12 digit nomor meter/ID Pelanggan PLN</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nominal Token</label>
+                        <select class="form-control" name="nominal" required>
+                            <option value="">Pilih nominal</option>
+                            <option value="20000">Rp 20.000</option>
+                            <option value="50000">Rp 50.000</option>
+                            <option value="100000">Rp 100.000</option>
+                            <option value="200000">Rp 200.000</option>
+                            <option value="500000">Rp 500.000</option>
+                            <option value="1000000">Rp 1.000.000</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Admin</label>
+                        <input type="text" class="form-control" value="Rp 2.500" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Total Bayar</label>
+                        <input type="text" class="form-control" name="total" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeTokenListrikModal()">Batal</button>
+                    <button type="submit" class="btn btn-warning">Beli</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal PDAM -->
+<div class="modal fade" id="modalPDAM" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bayar PDAM</h5>
+                <button type="button" class="close" onclick="closePDAMModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formPDAM" onsubmit="return handleBayarPDAM(event)">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>ID Pelanggan PDAM</label>
+                        <input type="text" 
+                               class="form-control" 
+                               name="customer_number"
+                               pattern="[0-9]{6,12}"
+                               required
+                               placeholder="Contoh: 123456789">
+                        <small class="form-text text-muted">Masukkan 6-12 digit nomor pelanggan PDAM</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Wilayah</label>
+                        <select class="form-control" name="area" required>
+                            <option value="">Pilih wilayah</option>
+                            <option value="DENPASAR">Kota Denpasar</option>
+                            <option value="BADUNG">Kabupaten Badung</option>
+                            <option value="GIANYAR">Kabupaten Gianyar</option>
+                            <option value="TABANAN">Kabupaten Tabanan</option>
+                            <option value="KLUNGKUNG">Kabupaten Klungkung</option>
+                            <option value="BANGLI">Kabupaten Bangli</option>
+                            <option value="BULELENG">Kabupaten Buleleng</option>
+                            <option value="KARANGASEM">Kabupaten Karangasem</option>
+                            <option value="JEMBRANA">Kabupaten Jembrana</option>
+                            <option value="LOMBOK">Kota Mataram</option>
+                            <option value="BIMA">Kota Bima</option>
+                            <option value="SUMBAWA">Kabupaten Sumbawa</option>
+                            <option value="KUPANG">Kota Kupang</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nominal Tagihan</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Rp</span>
+                            </div>
+                            <input type="number" 
+                                   class="form-control" 
+                                   name="nominal"
+                                   required
+                                   min="10000"
+                                   step="1000"
+                                   placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Admin</label>
+                        <input type="text" class="form-control" value="Rp 2.500" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Total Bayar</label>
+                        <input type="text" class="form-control" name="total" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePDAMModal()">Batal</button>
+                    <button type="submit" class="btn btn-primary">Bayar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tarik Tunai -->
+<div class="modal fade" id="modalTarikTunai" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tarik Tunai</h5>
+                <button type="button" class="close" onclick="closeTarikTunaiModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formTarikTunai" onsubmit="return handleTarikTunai(event)">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Atas Nama</label>
+                        <input type="text" 
+                               class="form-control" 
+                               name="customer_name"
+                               required
+                               placeholder="Masukkan nama nasabah">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bank</label>
+                        <select class="form-control" name="bank" required>
+                            <option value="">Pilih bank</option>
+                            <option value="BCA">BCA</option>
+                            <option value="MANDIRI">MANDIRI</option>
+                            <option value="BNI">BNI</option>
+                            <option value="BRI">BRI</option>
+                            <option value="PERMATA">PERMATA</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nominal Tarik Tunai</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Rp</span>
+                            </div>
+                            <input type="number" 
+                                   class="form-control" 
+                                   name="nominal"
+                                   required
+                                   min="50000"
+                                   step="50000"
+                                   placeholder="0">
+                        </div>
+                        <small class="form-text text-muted">Minimal Rp 50.000</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Saldo Setelah Transaksi</label>
+                        <input type="text" class="form-control" name="saldo_after" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeTarikTunaiModal()">Batal</button>
+                    <button type="submit" class="btn btn-danger">Tarik</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Transfer -->
+<div class="modal fade" id="modalTransfer" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transfer</h5>
+                <button type="button" class="close" onclick="closeTransferModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formTransfer" onsubmit="return handleTransfer(event)">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Atas Nama</label>
+                        <input type="text" 
+                               class="form-control" 
+                               name="customer_name"
+                               required
+                               placeholder="Masukkan nama penerima">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bank</label>
+                        <select class="form-control" name="bank" required>
+                            <option value="">Pilih bank</option>
+                            <option value="BCA">BCA</option>
+                            <option value="MANDIRI">MANDIRI</option>
+                            <option value="BNI">BNI</option>
+                            <option value="BRI">BRI</option>
+                            <option value="PERMATA">PERMATA</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nominal Transfer</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Rp</span>
+                            </div>
+                            <input type="number" 
+                                   class="form-control" 
+                                   name="nominal"
+                                   required
+                                   min="10000"
+                                   step="1000"
+                                   placeholder="0">
+                        </div>
+                        <small class="form-text text-muted">Minimal Rp 10.000</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Sisa Saldo</label>
+                        <input type="text" class="form-control" name="sisa_saldo" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeTransferModal()">Batal</button>
+                    <button type="submit" class="btn btn-info">Transfer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal E-Wallet -->
+<div class="modal fade" id="modalEWallet" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Top Up E-Wallet</h5>
+                <button type="button" class="close" onclick="closeEWalletModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formEWallet" onsubmit="handleEWallet(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Nomor Telepon</label>
+                        <input type="text" name="phone" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Jenis E-Wallet</label>
+                        <select name="type" class="form-control" required>
+                            <option value="">Pilih E-Wallet</option>
+                            <option value="DANA">DANA</option>
+                            <option value="OVO">OVO</option>
+                            <option value="GOPAY">GOPAY</option>
+                            <option value="SHOPEEPAY">ShopeePay</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nominal</label>
+                        <select name="nominal" class="form-control" required>
+                            <option value="">Pilih Nominal</option>
+                            <option value="10000">Rp 10.000</option>
+                            <option value="20000">Rp 20.000</option>
+                            <option value="50000">Rp 50.000</option>
+                            <option value="100000">Rp 100.000</option>
+                            <option value="200000">Rp 200.000</option>
+                            <option value="500000">Rp 500.000</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Biaya Admin</label>
+                        <input type="text" name="admin_fee" class="form-control" value="2500" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Total Bayar</label>
+                        <input type="text" name="total" class="form-control" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEWalletModal()">Batal</button>
+                    <button type="submit" class="btn btn-primary">Top Up</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Tambahkan section grafik dan laporan di bawah cards -->
+<div class="row mt-4">
+    <!-- Grafik Penjualan -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Grafik Transaksi PPOB</h3>
+                <div class="card-tools">
+                    <select id="chartPeriod" class="form-control form-control-sm">
+                        <option value="daily">Harian</option>
+                        <option value="monthly">Bulanan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="height: 400px;">
+                    <canvas id="ppobChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Laporan -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Laporan PPOB</h3>
+            </div>
+            <div class="card-body">
+                <div class="mt-4">
+                    <div class="form-group">
+                        <label>Periode</label>
+                        <div class="input-group">
+                            <input type="date" class="form-control" id="export_start_date" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text">s/d</span>
+                            </div>
+                            <input type="date" class="form-control" id="export_end_date" required>
+                        </div>
+                    </div>
+                    <a href="#" onclick="exportPPOB(); return false;" class="btn btn-success btn-block">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </a>
+                </div>
+
+                <!-- Ringkasan Transaksi -->
+                <div class="mt-4">
+                    <h5>Ringkasan Hari Ini</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Total Masuk</td>
+                            <td class="text-right" id="todayIn">Rp 0</td>
+                        </tr>
+                        <tr>
+                            <td>Total Keluar</td>
+                            <td class="text-right" id="todayOut">Rp 0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Saldo</strong></td>
+                            <td class="text-right"><strong id="todayBalance">Rp 0</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS untuk warna purple -->
+<style>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+.btn-purple {
+    color: #fff;
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+}
+.btn-purple:hover {
+    color: #fff;
+    background-color: #5d36a4;
+    border-color: #59339d;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Fungsi untuk membuka modal tambah saldo
+function openTambahSaldoModal() {
+    $('#modalTambahSaldo').modal('show');
+}
+
+// Fungsi untuk menutup modal tambah saldo
+function closeTambahSaldoModal() {
+    $('#modalTambahSaldo').modal('hide');
+    // Reset form saat modal ditutup
+    $('#formTambahSaldo')[0].reset();
+}
+
+// Fungsi untuk membuka modal riwayat saldo
+function openRiwayatSaldoModal() {
+    $('#modalRiwayatSaldo').modal('show');
+}
+
+// Fungsi untuk menutup modal riwayat saldo
+function closeRiwayatSaldoModal() {
+    $('#modalRiwayatSaldo').modal('hide');
+}
+
+// Handle submit form tambah saldo
+function handleTambahSaldo(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const nominal = form.nominal.value;
+    const keterangan = form.keterangan.value;
+
+    // Validasi input
+    if (!nominal || nominal < 10000) {
+        alert('Minimal nominal tambah saldo adalah Rp 10.000');
+        return false;
+    }
+
+    // Konfirmasi
+    if (!confirm(`Anda akan menambah saldo sebesar Rp ${nominal}. Lanjutkan?`)) {
+        return false;
+    }
+
+    // Kirim request AJAX
+    $.ajax({
+        url: '{% url "kasir:ppob_add_saldo" %}',
+        type: 'POST',
+        data: {
+            nominal: nominal,
+            keterangan: keterangan,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                alert('Saldo berhasil ditambahkan');
+                closeTambahSaldoModal(); // Tutup modal setelah berhasil
+                location.reload();
+            } else {
+                alert(response.message || 'Gagal menambahkan saldo');
+            }
+        },
+        error: function() {
+            alert('Gagal menambahkan saldo');
+        }
+    });
+}
+
+// Event listener saat modal ditutup
+$('#modalTambahSaldo').on('hidden.bs.modal', function () {
+    $('#formTambahSaldo')[0].reset();
+});
+
+// Event listener saat modal dibuka
+$('#modalTambahSaldo').on('shown.bs.modal', function () {
+    $('input[name="nominal"]').focus();
+});
+
+// Event listener untuk modal riwayat saldo
+$('#modalRiwayatSaldo').on('hidden.bs.modal', function () {
+    console.log('Riwayat saldo modal closed');
+});
+
+// Inisialisasi saat dokumen ready
+$(document).ready(function() {
+    console.log('Script initialized');
+});
+
+// Fungsi untuk membuka modal pulsa
+function openPulsaModal() {
+    $('#modalPulsa').modal('show');
+}
+
+// Fungsi untuk menutup modal pulsa
+function closePulsaModal() {
+    $('#modalPulsa').modal('hide');
+    $('#formPulsa')[0].reset();
+}
+
+// Deteksi provider berdasarkan nomor
+function detectProvider(number) {
+    // Hapus karakter non-digit
+    number = number.replace(/\D/g, '');
+    
+    // Jika nomor dimulai dengan 0, hapus 0 di depan
+    if (number.startsWith('0')) {
+        number = number.substring(1);
+    }
+    
+    // Jika nomor dimulai dengan 62, hapus 62
+    if (number.startsWith('62')) {
+        number = number.substring(2);
+    }
+    
+    // Ambil 4 digit pertama untuk pengecekan
+    const prefix = number.substring(0, 4);
+    let provider = '';
+    
+    // Mapping prefix ke provider
+    const prefixMap = {
+        // Telkomsel
+        telkomsel: ['0811', '0812', '0813', '0821', '0822', '0823', '0851', '0852', '0853'],
+        // Indosat 
+        indosat: ['0814', '0815', '0816', '0855', '0856', '0857', '0858'],
+        // XL
+        xl: ['0817', '0818', '0819', '0859', '0877', '0878'],
+        // Axis
+        axis: ['0831', '0832', '0833', '0838'],
+        // Three
+        three: ['0895', '0896', '0897', '0898', '0899'],
+        // Smartfren
+        smartfren: ['0881', '0882', '0883', '0884', '0885', '0886', '0887', '0888', '0889']
+    };
+
+    // Cek prefix untuk setiap provider
+    for (const [providerName, prefixes] of Object.entries(prefixMap)) {
+        if (prefixes.some(p => number.startsWith(p.substring(1)))) {
+            provider = providerName.charAt(0).toUpperCase() + providerName.slice(1);
+            break;
+        }
+    }
+
+            // Kirim request AJAX
+            $.ajax({
+                url: '{% url "kasir:ppob_beli_pulsa" %}',
+                type: 'POST',
+                data: {
+                    phone: phone,
+                    nominal: nominal,
+                    provider: provider,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Pulsa berhasil dibeli',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            closePulsaModal();
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: response.message || 'Gagal membeli pulsa'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: response.message || 'Gagal membeli pulsa'
+                    });
+                }
+            });
+        }
+
+// Event listener untuk input nomor HP
+$('input[name="phone"]').on('input', function() {
+    const phone = $(this).val().replace(/\D/g, ''); // Hapus karakter non-digit
+    
+    if (phone.length >= 4) {
+        const provider = detectProvider(phone);
+        $('input[name="provider"]').val(provider);
+        
+        if (provider === 'Unknown') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Provider Tidak Dikenal',
+                text: 'Nomor yang anda masukkan tidak dikenali sebagai provider manapun',
+                confirmButtonText: 'OK'
+            });
+        }
+    } else {
+        $('input[name="provider"]').val('');
+    }
+});
+
+// Fungsi untuk membuka modal paket data
+function openPaketDataModal() {
+    $('#modalPaketData').modal('show');
+}
+
+// Fungsi untuk menutup modal paket data
+function closePaketDataModal() {
+    $('#modalPaketData').modal('hide');
+    $('#formPaketData')[0].reset();
+}
+
+// Fungsi untuk mendapatkan harga dari value paket
+function getPaketPrice(paketValue) {
+    const prices = {
+        '1GB-7D-15000': 15000,
+        '2GB-7D-25000': 25000,
+        '3GB-30D-50000': 50000,
+        '5GB-30D-75000': 75000,
+        '10GB-30D-100000': 100000,
+        'COMBO-S-35000': 35000,
+        'COMBO-M-50000': 50000,
+        'COMBO-L-75000': 75000
+    };
+    return prices[paketValue] || 0;
+}
+
+// Handle form paket data
+function handleBeliPaketData(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const phone = form.phone.value;
+    const provider = form.provider.value;
+    const paket = form.paket.value;
+    const harga = getPaketPrice(paket);
+
+    // Validasi saldo
+    const currentBalance = parseFloat('{{ saldo|default:0 }}');
+    if (currentBalance < harga) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Saldo Tidak Cukup',
+            text: 'Saldo anda tidak mencukupi untuk transaksi ini'
+        });
+        return false;
+    }
+
+    // Konfirmasi pembelian
+    Swal.fire({
+        title: 'Konfirmasi Pembelian',
+        html: `
+            <div class="text-left">
+                <p>Anda akan membeli paket data dengan detail:</p>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Provider</td>
+                        <td>: ${provider}</td>
+                    </tr>
+                    <tr>
+                        <td>Nomor</td>
+                        <td>: ${phone}</td>
+                    </tr>
+                    <tr>
+                        <td>Paket</td>
+                        <td>: ${form.paket.options[form.paket.selectedIndex].text}</td>
+                    </tr>
+                    <tr>
+                        <td>Harga</td>
+                        <td>: Rp ${harga.toLocaleString()}</td>
+                    </tr>
+                </table>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Beli',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Tampilkan loading
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Kirim request AJAX
+            $.ajax({
+                url: '{% url "kasir:ppob_beli_paket_data" %}',
+                type: 'POST',
+                data: {
+                    phone: phone,
+                    provider: provider,
+                    paket: paket,
+                    harga: harga,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Paket data berhasil dibeli',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            closePaketDataModal();
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: response.message || 'Gagal membeli paket data'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: response.message || 'Gagal membeli paket data'
+                    });
+                }
+            });
+        }
+    });
+}
+
+// Update harga saat paket dipilih
+$('select[name="paket"]').on('change', function() {
+    const harga = getPaketPrice(this.value);
+    $('input[name="harga"]').val(harga.toLocaleString());
+});
+
+// Gunakan fungsi detectProvider yang sudah ada untuk nomor HP
+
+const ADMIN_FEE = 2000;
+
+function openTokenListrikModal() {
+    $('#modalTokenListrik').modal('show');
+}
+
+function closeTokenListrikModal() {
+    $('#modalTokenListrik').modal('hide');
+    $('#formTokenListrik')[0].reset();
+}
+
+// Update total saat nominal berubah
+$('select[name="nominal"]').on('change', function() {
+    const nominal = parseInt(this.value) || 0;
+    const total = nominal + ADMIN_FEE;
+    $('input[name="total"]').val(`Rp ${total.toLocaleString()}`);
+});
+
+function handleBeliToken(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const meterNumber = form.meter_number.value;
+    const nominal = parseInt(form.nominal.value);
+    const total = nominal + ADMIN_FEE;
+
+    // Validasi saldo
+    const currentBalance = parseFloat('{{ saldo|default:0 }}');
+    if (currentBalance < total) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Saldo Tidak Cukup',
+            text: 'Saldo anda tidak mencukupi untuk transaksi ini'
+        });
+        return false;
+    }
+
+    // Konfirmasi pembelian
+    Swal.fire({
+        title: 'Konfirmasi Pembelian',
+        html: `
+            <div class="text-left">
+                <p>Detail pembelian token listrik:</p>
+                <table class="table table-sm">
+                    <tr>
+                        <td>ID Pelanggan</td>
+                        <td>: ${meterNumber}</td>
+                    </tr>
+                    <tr>
+                        <td>Nominal Token</td>
+                        <td>: Rp ${nominal.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Biaya Admin</td>
+                        <td>: Rp ${ADMIN_FEE.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Bayar</strong></td>
+                        <td><strong>: Rp ${total.toLocaleString()}</strong></td>
+                    </tr>
+                </table>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ffc107',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Beli',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '{% url "kasir:ppob_beli_token" %}',
+                type: 'POST',
+                data: {
+                    meter_number: meterNumber,
+                    nominal: nominal,
+                    admin_fee: ADMIN_FEE,
+                    total: total,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Token listrik berhasil dibeli',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            closeTokenListrikModal();
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: response.message || 'Gagal membeli token listrik'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: response.message || 'Gagal membeli token listrik'
+                    });
+                }
+            });
+        }
+    });
+}
+
+const PDAM_ADMIN_FEE = 2500;
+
+function openPDAMModal() {
+    $('#modalPDAM').modal('show');
+}
+
+function closePDAMModal() {
+    $('#modalPDAM').modal('hide');
+    $('#formPDAM')[0].reset();
+}
+
+// Update total saat nominal berubah
+$('input[name="nominal"]').on('input', function() {
+    const nominal = parseInt(this.value) || 0;
+    const total = nominal + PDAM_ADMIN_FEE;
+    $('input[name="total"]').val(`Rp ${total.toLocaleString()}`);
+});
+
+function handleBayarPDAM(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const customerNumber = form.customer_number.value;
+    const area = form.area.value;
+    const nominal = parseInt(form.nominal.value);
+    const total = nominal + PDAM_ADMIN_FEE;
+
+    // Validasi saldo
+    const currentBalance = parseFloat('{{ saldo|default:0 }}');
+    if (currentBalance < nominal) {  // Hanya cek nominal tagihan, tanpa admin
+        Swal.fire({
+            icon: 'error',
+            title: 'Saldo Tidak Cukup',
+            text: 'Saldo anda tidak mencukupi untuk transaksi ini'
+        });
+        return false;
+    }
+
+    // Konfirmasi pembayaran
+    Swal.fire({
+        title: 'Konfirmasi Pembayaran',
+        html: `
+            <div class="text-left">
+                <p>Detail pembayaran PDAM:</p>
+                <table class="table table-sm">
+                    <tr>
+                        <td>ID Pelanggan</td>
+                        <td>: ${customerNumber}</td>
+                    </tr>
+                    <tr>
+                        <td>Wilayah</td>
+                        <td>: ${area}</td>
+                    </tr>
+                    <tr>
+                        <td>Nominal Tagihan</td>
+                        <td>: Rp ${nominal.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Biaya Admin</td>
+                        <td>: Rp ${PDAM_ADMIN_FEE.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Bayar</strong></td>
+                        <td><strong>: Rp ${total.toLocaleString()}</strong></td>
+                    </tr>
+                </table>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Bayar',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '{% url "kasir:ppob_bayar_pdam" %}',
+                type: 'POST',
+                data: {
+                    customer_number: customerNumber,
+                    area: area,
+                    nominal: nominal,
+                    admin_fee: PDAM_ADMIN_FEE,
+                    total: total,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Pembayaran PDAM berhasil',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            closePDAMModal();
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: response.message || 'Gagal melakukan pembayaran'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: response.message || 'Gagal melakukan pembayaran'
+                    });
+                }
+            });
+        }
+    });
+}
+
+// Update total saat nominal atau admin berubah
+function updateTotal() {
+    const nominal = parseInt($('select[name="nominal"]').val()) || 0;
+    const adminFee = parseInt($('input[name="admin_fee"]').val()) || 0;
+    const total = nominal + adminFee;
+    $('input[name="total"]').val(`Rp ${total.toLocaleString()}`);
+}
+
+$('select[name="nominal"], input[name="admin_fee"]').on('change input', updateTotal);
+
+function openTarikTunaiModal() {
+    $('#modalTarikTunai').modal('show');
+}
+
+function closeTarikTunaiModal() {
+    $('#modalTarikTunai').modal('hide');
+    $('#formTarikTunai')[0].reset();
+}
+
+// Update saldo saat nominal berubah
+$('input[name="nominal"]').on('input', function() {
+    const nominal = parseInt(this.value) || 0;
+    const currentBalance = parseFloat('{{ saldo|default:0 }}');
+    const saldoAfter = currentBalance + nominal;  // Ubah pengurangan menjadi penambahan
+    $('input[name="saldo_after"]').val(`Rp ${saldoAfter.toLocaleString()}`);
+});
+
+function handleTarikTunai(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const customerName = form.customer_name.value;
+    const bank = form.bank.value;
+    const nominal = parseInt(form.nominal.value);
+    const currentBalance = parseFloat('{{ saldo|default:0 }}');
+
+    // Konfirmasi penarikan
+    Swal.fire({
+        title: 'Konfirmasi Tarik Tunai',
+        html: `
+            <div class="text-left">
+                <p>Detail tarik tunai:</p>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Atas Nama</td>
+                        <td>: ${customerName}</td>
+                    </tr>
+                    <tr>
+                        <td>Bank</td>
+                        <td>: ${bank}</td>
+                    </tr>
+                    <tr>
+                        <td>Nominal</td>
+                        <td>: Rp ${nominal.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Saldo Setelah Transaksi</td>
+                        <td>: Rp ${(currentBalance + nominal).toLocaleString()}</td>
+                    </tr>
+                </table>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Proses',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '{% url "kasir:ppob_tarik_tunai" %}',
+                type: 'POST',
+                data: {
+                    customer_name: customerName,
+                    bank: bank,
+                    nominal: nominal,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Tarik tunai berhasil',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            closeTarikTunaiModal();
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: response.message || 'Gagal melakukan tarik tunai'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: response.message || 'Gagal melakukan tarik tunai'
+                    });
+                }
+            });
+        }
+    });
+}
+
+function openTransferModal() {
+    $('#modalTransfer').modal('show');
+}
+
+function closeTransferModal() {
+    $('#modalTransfer').modal('hide');
+    $('#formTransfer')[0].reset();
+}
+
+// Update sisa saldo saat nominal berubah
+$('#formTransfer input[name="nominal"]').on('input', function() {
+    const nominal = parseInt(this.value) || 0;
+    const currentBalance = parseFloat('{{ saldo|default:0 }}');
+    const sisaSaldo = currentBalance - nominal;
+    $('#formTransfer input[name="sisa_saldo"]').val(`Rp ${sisaSaldo.toLocaleString()}`);
+});
+
+function handleTransfer(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const customerName = form.customer_name.value;
+    const bank = form.bank.value;
+    const nominal = parseInt(form.nominal.value);
+    const currentBalance = parseFloat('{{ saldo|default:0 }}');
+
+    // Validasi saldo
+    if (currentBalance < nominal) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Saldo Tidak Cukup',
+            text: 'Saldo anda tidak mencukupi untuk transaksi ini'
+        });
+        return false;
+    }
+
+    // Konfirmasi transfer
+    Swal.fire({
+        title: 'Konfirmasi Transfer',
+        html: `
+            <div class="text-left">
+                <p>Detail transfer:</p>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Atas Nama</td>
+                        <td>: ${customerName}</td>
+                    </tr>
+                    <tr>
+                        <td>Bank</td>
+                        <td>: ${bank}</td>
+                    </tr>
+                    <tr>
+                        <td>Nominal</td>
+                        <td>: Rp ${nominal.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Sisa Saldo</td>
+                        <td>: Rp ${(currentBalance - nominal).toLocaleString()}</td>
+                    </tr>
+                </table>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#17a2b8',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Transfer',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '{% url "kasir:ppob_transfer" %}',
+                type: 'POST',
+                data: {
+                    customer_name: customerName,
+                    bank: bank,
+                    nominal: nominal,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Transfer berhasil',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            closeTransferModal();
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: response.message || 'Gagal melakukan transfer'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: response.message || 'Gagal melakukan transfer'
+                    });
+                }
+            });
+        }
+    });
+}
+
+let ppobChart;
+
+function initChart() {
+    const ctx = document.getElementById('ppobChart').getContext('2d');
+    ppobChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Total Masuk',
+                data: [],
+                borderColor: '#28a745',  // Hijau
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                tension: 0.1,
+                fill: true,
+                borderWidth: 2
+            }, {
+                label: 'Total Keluar',
+                data: [],
+                borderColor: '#dc3545',  // Merah
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                tension: 0.1,
+                fill: true,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Grafik PPOB'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Rp ' + value.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateChart(data) {
+    if (!ppobChart) {
+        initChart();
+    }
+
+    ppobChart.data.labels = data.labels;
+    ppobChart.data.datasets[0].data = data.in_data;
+    ppobChart.data.datasets[1].data = data.out_data;  // Menambahkan data keluar
+    ppobChart.update();
+}
+
+// Handler untuk perubahan periode
+$('#chartPeriod').on('change', function() {
+    const period = $(this).val();
+    loadChartData(period);
+});
+
+// Fungsi untuk memuat data
+function loadChartData() {
+    $.ajax({
+        url: '{% url "kasir:ppob_chart_data" %}',
+        success: function(response) {
+            console.log('Chart data:', response);
+            updateChart(response);
+        },
+        error: function(xhr) {
+            console.error('Error loading chart data:', xhr);
+        }
+    });
+}
+
+// Inisialisasi saat dokumen siap
+$(document).ready(function() {
+    initChart();
+    loadChartData();
+});
+
+function exportPPOB() {
+    const startDate = $('#export_start_date').val();
+    const endDate = $('#export_end_date').val();
+    
+    if (!startDate || !endDate) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Pilih periode terlebih dahulu'
+        });
+        return false;
+    }
+
+    // Debug
+    console.log('Exporting:', startDate, endDate);
+
+    // Buat URL untuk export
+    const url = "{% url 'kasir:ppob_export' %}" + `?start_date=${startDate}&end_date=${endDate}`;
+    
+    // Debug
+    console.log('Export URL:', url);
+    
+    // Buka di tab baru untuk download
+    window.open(url, '_blank');
+    
+    return false;
+}
+
+const EWALLET_ADMIN = 2000;
+
+function openEWalletModal() {
+    $('#modalEWallet').modal('show');
+}
+
+function closeEWalletModal() {
+    $('#modalEWallet').modal('hide');
+    $('#formEWallet')[0].reset();
+}
+
+// Update total saat nominal berubah
+$('#formEWallet select[name="nominal"]').on('change', function() {
+    const nominal = parseInt(this.value) || 0;
+    const total = nominal + EWALLET_ADMIN;
+    $('#formEWallet input[name="total"]').val(`Rp ${total.toLocaleString()}`);
+});
+
+function handleEWallet(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const phone = form.phone.value;
+    const type = form.type.value;
+    const nominal = parseInt(form.nominal.value);
+    const total = nominal + EWALLET_ADMIN;
+
+    // Validasi saldo
+    const currentBalance = parseInt("{{ saldo|default:0 }}");
+    if (currentBalance < total) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Saldo Tidak Cukup',
+            text: 'Saldo PPOB anda tidak mencukupi untuk transaksi ini'
+        });
+        return false;
+    }
+
+    // Konfirmasi top up
+    Swal.fire({
+        title: 'Konfirmasi Top Up',
+        html: `
+            <div class="text-left">
+                <p>Detail top up e-wallet:</p>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Nomor Telepon</td>
+                        <td>: ${phone}</td>
+                    </tr>
+                    <tr>
+                        <td>E-Wallet</td>
+                        <td>: ${type}</td>
+                    </tr>
+                    <tr>
+                        <td>Nominal</td>
+                        <td>: Rp ${nominal.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Biaya Admin</td>
+                        <td>: Rp ${EWALLET_ADMIN.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Bayar</strong></td>
+                        <td><strong>: Rp ${total.toLocaleString()}</strong></td>
+                    </tr>
+                </table>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Top Up',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '{% url "kasir:ppob_ewallet" %}',
+                type: 'POST',
+                data: {
+                    phone: phone,
+                    type: type,
+                    nominal: nominal,
+                    admin_fee: EWALLET_ADMIN,
+                    total: total,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Top up e-wallet berhasil',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            closeEWalletModal();
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: response.message || 'Gagal melakukan top up'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: response.message || 'Gagal melakukan top up'
+                    });
+                }
+            });
+        }
+    });
+}
+
+// Handle form pulsa
+function handleBeliPulsa(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const phone = form.phone.value;
+    const nominal = parseInt(form.nominal.value);
+    const provider = form.provider.value;
+
+    // Validasi saldo menggunakan PPOBSaldo, bukan User
+    const currentBalance = parseInt("{{ saldo|default:0 }}");
+    
+    if (currentBalance < nominal) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Saldo Tidak Cukup',
+            text: 'Saldo PPOB anda tidak mencukupi untuk transaksi ini'
+        });
+        return false;
+    }
+
+    // Konfirmasi pembelian dengan SweetAlert2
+    Swal.fire({
+        title: 'Konfirmasi Pembelian',
+        html: `
+            <div class="text-left">
+                <p>Anda akan membeli pulsa dengan detail:</p>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Provider</td>
+                        <td>: ${provider}</td>
+                    </tr>
+                    <tr>
+                        <td>Nomor</td>
+                        <td>: ${phone}</td>
+                    </tr>
+                    <tr>
+                        <td>Nominal</td>
+                        <td>: Rp ${nominal.toLocaleString()}</td>
+                    </tr>
+                </table>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Beli',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // ... kode ajax tetap sama ...
+        }
+    });
+}
+
+// Fungsi untuk memuat ringkasan hari ini
+function loadTodaySummary() {
+    $.ajax({
+        url: '{% url "kasir:ppob_today_summary" %}',
+        method: 'GET',
+        success: function(response) {
+            $('#todayIn').text('Rp ' + response.total_in.toLocaleString('id-ID'));
+            $('#todayOut').text('Rp ' + response.total_out.toLocaleString('id-ID'));
+            $('#todayBalance').text('Rp ' + response.balance.toLocaleString('id-ID'));
+        },
+        error: function(xhr) {
+            console.error('Error loading today summary:', xhr);
+        }
+    });
+}
+
+// Panggil fungsi saat halaman dimuat
+$(document).ready(function() {
+    loadTodaySummary();
+    // Refresh setiap 1 menit
+    setInterval(loadTodaySummary, 60000);
+});
+
+// Update fungsi untuk menampilkan biaya admin dan fee
+function updateFees(provider, nominal) {
+    let fees = {
+        'TELKOMSEL': {
+            base_fee: 2000,
+            admin_fee: 2800,
+            total_fee: 4800,
+            mitra_fee: 450,
+            agent_fee: 2250
+        },
+        'INDOSAT': {
+            base_fee: 2000,
+            admin_fee: 0,
+            total_fee: 2000,
+            mitra_fee: 475,
+            agent_fee: 2375
+        },
+        'XL': {
+            base_fee: 2000,
+            admin_fee: 0,
+            total_fee: 2000,
+            mitra_fee: 425,
+            agent_fee: 2125
+        },
+        'TRI': {
+            base_fee: 2000,
+            admin_fee: 0,
+            total_fee: 2000,
+            mitra_fee: 600,
+            agent_fee: 3000
+        },
+        'SMARTFREN': {
+            base_fee: 2000,
+            admin_fee: 0,
+            total_fee: 2000,
+            mitra_fee: 600,
+            agent_fee: 3000
+        }
+    };
+
+    let fee = fees[provider] || {
+        base_fee: 0,
+        admin_fee: 0,
+        total_fee: 0,
+        mitra_fee: 0,
+        agent_fee: 0
+    };
+
+    // Update tampilan
+    $('#adminFee').text('Rp ' + fee.admin_fee.toLocaleString('id-ID'));
+    $('#totalFee').text('Rp ' + fee.total_fee.toLocaleString('id-ID'));
+    
+    // Hitung total yang harus dibayar
+    const total = parseInt(nominal) + fee.total_fee;
+    $('#totalBayar').text('Rp ' + total.toLocaleString('id-ID'));
+    
+    return fee;
+}
+
+// Update fungsi untuk transfer
+function updateTransferFee(nominal) {
+    let fee;
+    if (nominal <= 1000000) {
+        fee = {
+            base_fee: 2500,
+            admin_fee: 6500,
+            total_fee: 9000,
+            mitra_fee: 630,
+            agent_fee: 3150
+        };
+    } else {
+        fee = {
+            base_fee: 3500,
+            admin_fee: 6500,
+            total_fee: 10000,
+            mitra_fee: 730,
+            agent_fee: 3650
+        };
+    }
+
+    $('#adminFee').text('Rp ' + fee.admin_fee.toLocaleString('id-ID'));
+    $('#totalFee').text('Rp ' + fee.total_fee.toLocaleString('id-ID'));
+    
+    const total = parseInt(nominal) + fee.total_fee;
+    $('#totalBayar').text('Rp ' + total.toLocaleString('id-ID'));
+    
+    return fee;
+}
+
+// Update fungsi untuk token listrik
+function updateTokenFee() {
+    const tokenFee = {
+        admin_fee: 3000,
+        total_fee: 3000,
+        mitra_fee: 270,
+        agent_fee: 1350
+    };
+
+    $('#adminFee').text('Rp ' + tokenFee.admin_fee.toLocaleString('id-ID'));
+    $('#totalFee').text('Rp ' + tokenFee.total_fee.toLocaleString('id-ID'));
+    
+    return tokenFee;
+}
+
+// Update fungsi untuk tagihan
+function updateTagihanFee(jenis_tagihan, provider = null) {
+    const fee_config = {
+        'TELKOM': {
+            base_fee: 1000,
+            admin_fee: 2800,
+            total_fee: 3800,
+            mitra_fee: 350,
+            agent_fee: 1750
+        },
+        'INDIHOME': {
+            base_fee: 1000,
+            admin_fee: 2800,
+            total_fee: 3800,
+            mitra_fee: 350,
+            agent_fee: 1750
+        },
+        'HP_PASCABAYAR': {
+            'TELKOMSEL': {
+                base_fee: 2000,
+                admin_fee: 2800,
+                total_fee: 4800,
+                mitra_fee: 450,
+                agent_fee: 2250
+            },
+            'INDOSAT': {
+                base_fee: 2000,
+                admin_fee: 0,
+                total_fee: 2000,
+                mitra_fee: 475,
+                agent_fee: 2375
+            },
+            // ... provider lainnya ...
+        }
+    };
+
+    let fee;
+    if (provider && fee_config[jenis_tagihan]) {
+        fee = fee_config[jenis_tagihan][provider];
+    } else {
+        fee = fee_config[jenis_tagihan];
+    }
+
+    if (!fee) {
+        fee = {
+            base_fee: 0,
+            admin_fee: 0,
+            total_fee: 0,
+            mitra_fee: 0,
+            agent_fee: 0
+        };
+    }
+
+    // Update tampilan
+    $('#adminFee').text('Rp ' + fee.admin_fee.toLocaleString('id-ID'));
+    $('#totalFee').text('Rp ' + fee.total_fee.toLocaleString('id-ID'));
+    
+    return fee;
+}
+</script>
+{% endblock %} 

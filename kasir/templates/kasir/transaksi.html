@@ -1,0 +1,620 @@
+{% extends 'kasir/dashboard.html' %}
+{% load humanize %}
+
+{% block title %}Transaksi Baru{% endblock %}
+{% block page_title %}Transaksi Baru{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Kolom Kiri - Form Transaksi -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="barcode" placeholder="Scan Barcode / Ketik Nama Produk">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="button" id="searchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0" style="height: 400px;">
+                <table class="table table-head-fixed text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th>Harga</th>
+                            <th>Qty</th>
+                            <th>Subtotal</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-items">
+                        <!-- Items will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <div class="float-right">
+                    <button class="btn btn-danger" id="clear-cart">
+                        <i class="fas fa-trash"></i> Bersihkan
+                    </button>
+                    {% if transaksi_id %}
+                    <button class="btn btn-danger" onclick="deleteTransaction({{ transaksi_id }})">
+                        <i class="fas fa-trash"></i> Hapus Transaksi
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kolom Kanan - Summary -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Detail Pembayaran</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-box bg-light">
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total</span>
+                        <span class="info-box-number" id="total">Rp 0</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Bayar</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Rp</span>
+                        </div>
+                        <input type="number" class="form-control" id="bayar">
+                    </div>
+                </div>
+
+                <div class="info-box bg-success">
+                    <div class="info-box-content">
+                        <span class="info-box-text">Kembalian</span>
+                        <span class="info-box-number" id="kembalian">Rp 0</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-lg btn-block" id="proses">
+                    <i class="fas fa-save"></i> Proses Pembayaran
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Amount Buttons -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Pembayaran Cepat</h3>
+            </div>
+            <div class="card-body">
+                <div class="btn-grid">
+                    <button class="btn btn-outline-primary m-1" data-amount="50000">50.000</button>
+                    <button class="btn btn-outline-primary m-1" data-amount="100000">100.000</button>
+                    <button class="btn btn-outline-primary m-1" data-amount="200000">200.000</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3 class="card-title">Shortcut Keyboard</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><kbd>F2</kbd> Cari Produk</li>
+                            <li><kbd>F3</kbd> Buka Pencarian</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><kbd>F4</kbd> Input Bayar</li>
+                            <li><kbd>F8</kbd> Proses Transaksi</li>
+                            <li><kbd>ESC</kbd> Bersihkan Keranjang</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Pencarian Produk -->
+<div class="modal fade" id="searchModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cari Produk</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control" id="searchInput" placeholder="Ketik nama produk...">
+                <div class="mt-3" id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabel Daftar Transaksi Hari Ini -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Daftar Transaksi Hari Ini</h3>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Waktu</th>
+                            <th>Detail Produk</th>
+                            <th>Total</th>
+                            <th>Bayar</th>
+                            <th>Kembalian</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaksi in transaksi_hari_ini %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ transaksi.tanggal|date:"H:i:s" }}</td>
+                            <td>
+                                {% for detail in transaksi.transaksidetail_set.all %}
+                                    {{ detail.produk.nama_barang }} ({{ detail.qty }}x)<br>
+                                {% endfor %}
+                            </td>
+                            <td>Rp {{ transaksi.total|floatformat:0|intcomma }}</td>
+                            <td>Rp {{ transaksi.bayar|floatformat:0|intcomma }}</td>
+                            <td>Rp {{ transaksi.kembalian|floatformat:0|intcomma }}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteTransaction({{ transaksi.id }})">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">Belum ada transaksi hari ini</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Pindahkan fungsi deleteTransaction ke scope global
+function deleteTransaction(transactionId) {
+    Swal.fire({
+        title: 'Hapus Transaksi?',
+        text: "Transaksi akan dihapus dan stok akan dikembalikan",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`{% url 'kasir:delete_transaction' transaction_id=0 %}`.replace('0', transactionId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire(
+                        'Berhasil!',
+                        data.message,
+                        'success'
+                    ).then(() => {
+                        // Refresh halaman setelah transaksi dihapus
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        data.message,
+                        'error'
+                    );
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire(
+                    'Error!',
+                    'Terjadi kesalahan saat menghapus transaksi',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    let cart = [];
+    const formatter = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR'
+    });
+
+    // Tambahkan fungsi selectProduct ke global scope
+    window.selectProduct = function(product) {
+        addToCart(product);
+        $('#searchModal').modal('hide');
+    };
+
+    // Tambahkan event listener untuk search di modal
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        if (this.value.length >= 2) {
+            searchProduct(this.value);
+        }
+    });
+
+    // Handle barcode input
+    document.getElementById('barcode').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchProduct(this.value);
+        }
+    });
+
+    // Search button click
+    document.getElementById('searchBtn').addEventListener('click', function() {
+        const query = document.getElementById('barcode').value;
+        if (query) {
+            searchProduct(query);
+        } else {
+            $('#searchModal').modal('show');
+        }
+    });
+
+    function searchProduct(query) {
+        fetch(`{% url 'kasir:search_products_transaksi' %}?search=${query}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const products = data.products;
+                if (products.length === 1) {
+                    // Langsung tambahkan ke cart jika hanya 1 produk
+                    addToCart({
+                        id: products[0].id,
+                        nama_barang: products[0].nama_barang,
+                        h_jual: products[0].h_jual,
+                        stok: products[0].stok
+                    });
+                    document.getElementById('barcode').value = '';
+                } else if (products.length > 1) {
+                    // Tampilkan di modal jika lebih dari 1 produk
+                    showSearchResults(products);
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Produk tidak ditemukan',
+                    text: 'Coba kata kunci lain'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Terjadi kesalahan saat mencari produk'
+            });
+        });
+    }
+
+    // Tambahkan event untuk proses pembayaran
+    document.getElementById('proses').addEventListener('click', function() {
+        if (cart.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Keranjang Kosong',
+                text: 'Silakan tambahkan produk ke keranjang'
+            });
+            return;
+        }
+
+        const total = calculateTotal();
+        const bayar = parseFloat(document.getElementById('bayar').value) || 0;
+
+        if (bayar < total) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Pembayaran Kurang',
+                text: 'Jumlah pembayaran kurang dari total belanja'
+            });
+            return;
+        }
+
+        console.log('Sending data:', {
+            items: cart,
+            total: total,
+            bayar: bayar,
+            kembalian: bayar - total
+        });
+
+        // Proses transaksi
+        fetch("{% url 'kasir:process_transaction' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                items: cart,
+                total: total,
+                bayar: bayar,
+                kembalian: bayar - total
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Terjadi kesalahan');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Transaksi Berhasil',
+                    text: 'Mencetak struk...',
+                    showConfirmButton: false,
+                    allowOutsideClick: false
+                });
+
+                // Cetak struk
+                printReceipt(data.transaksi_id);
+
+                // Reset cart dan form
+                cart = [];
+                updateCartDisplay();
+                document.getElementById('bayar').value = '';
+                calculateTotal();
+                calculateKembalian();
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: error.message || 'Terjadi kesalahan saat memproses transaksi'
+            });
+        });
+    });
+
+    // Quick amount buttons
+    document.querySelectorAll('[data-amount]').forEach(button => {
+        button.addEventListener('click', function() {
+            document.getElementById('bayar').value = this.dataset.amount;
+            calculateKembalian();
+        });
+    });
+
+    // Calculate kembalian
+    document.getElementById('bayar').addEventListener('input', calculateKembalian);
+
+    function calculateKembalian() {
+        const total = calculateTotal();
+        const bayar = parseFloat(document.getElementById('bayar').value) || 0;
+        const kembalian = bayar - total;
+        
+        document.getElementById('kembalian').textContent = formatter.format(kembalian);
+    }
+
+    function calculateTotal() {
+        const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        document.getElementById('total').textContent = formatter.format(total);
+        return total;
+    }
+
+    function showSearchResults(products) {
+        const resultsDiv = document.getElementById('searchResults');
+        resultsDiv.innerHTML = `
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nama Produk</th>
+                        <th>Kategori</th>
+                        <th>Stok</th>
+                        <th>Harga</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${products.map(product => `
+                        <tr>
+                            <td>${product.nama_barang}</td>
+                            <td>${product.kategori || '-'}</td>
+                            <td>${product.stok}</td>
+                            <td>${formatter.format(product.h_jual)}</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm" onclick="selectProduct(${JSON.stringify(product).replace(/"/g, '&quot;')})">
+                                    <i class="fas fa-plus"></i> Pilih
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        $('#searchModal').modal('show');
+    }
+
+    function addToCart(product) {
+        const existingItem = cart.find(item => item.id === product.id);
+        
+        if (existingItem) {
+            existingItem.qty += 1;
+        } else {
+            cart.push({
+                id: product.id,
+                name: product.nama_barang,
+                price: product.h_jual,
+                qty: 1
+            });
+        }
+        
+        updateCartDisplay();
+    }
+
+    function updateCartDisplay() {
+        const tbody = document.getElementById('cart-items');
+        tbody.innerHTML = '';
+        
+        cart.forEach(item => {
+            const subtotal = item.price * item.qty;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.name}</td>
+                <td>${formatter.format(item.price)}</td>
+                <td>
+                    <input type="number" class="form-control form-control-sm qty-input" 
+                           value="${item.qty}" min="1" style="width: 70px"
+                           data-id="${item.id}">
+                </td>
+                <td>${formatter.format(subtotal)}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm delete-item" data-id="${item.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Event listener untuk quantity
+        $('.qty-input').on('input', function() {
+            const id = $(this).data('id');
+            const newQty = Math.max(1, parseInt($(this).val()) || 1);
+            const item = cart.find(item => item.id === id);
+            
+            if (item) {
+                item.qty = newQty;
+                const subtotal = item.price * newQty;
+                
+                // Update subtotal di baris yang sama
+                $(this).closest('tr').find('td:eq(3)').text(formatter.format(subtotal));
+                
+                // Update total dan kembalian
+                calculateTotal();
+                calculateKembalian();
+            }
+        });
+
+        // Event listener untuk delete
+        $('.delete-item').on('click', function() {
+            const id = $(this).data('id');
+            cart = cart.filter(item => item.id !== id);
+            
+            // Hapus baris dari tabel
+            $(this).closest('tr').remove();
+            
+            // Update total dan kembalian
+            calculateTotal();
+            calculateKembalian();
+        });
+
+        calculateTotal();
+        calculateKembalian();
+    }
+
+    // Tambahkan ini di dalam DOMContentLoaded
+    document.getElementById('clear-cart').addEventListener('click', function() {
+        cart = [];
+        updateCartDisplay();
+        calculateTotal();
+        calculateKembalian();
+    });
+
+    // Tambahkan event handler untuk tombol close modal
+    $('#searchModal .close').on('click', function() {
+        $('#searchModal').modal('hide');
+        $('#searchInput').val('');  // Reset input pencarian
+        $('#searchResults').empty(); // Bersihkan hasil pencarian
+    });
+
+    // Tambahkan event handler untuk tombol ESC
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape' && $('#searchModal').hasClass('show')) {
+            $('#searchModal').modal('hide');
+            $('#searchInput').val('');
+            $('#searchResults').empty();
+        }
+    });
+
+    // Tambahkan event handler untuk klik di luar modal
+    $('#searchModal').on('hidden.bs.modal', function () {
+        $('#searchInput').val('');
+        $('#searchResults').empty();
+    });
+
+    // Tambahkan fungsi printReceipt setelah proses transaksi berhasil
+    function printReceipt(transaksiId) {
+        fetch(`{% url 'kasir:print_receipt' transaksi_id=0 %}`.replace('0', transaksiId), {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Struk Berhasil Dicetak',
+                    text: 'Transaksi selesai'
+                });
+            } else {
+                throw new Error(data.message || 'Gagal mencetak struk');
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Gagal Mencetak Struk',
+                text: error.message,
+                showConfirmButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Coba Lagi',
+                cancelButtonText: 'Tutup'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    printReceipt(transaksiId);
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

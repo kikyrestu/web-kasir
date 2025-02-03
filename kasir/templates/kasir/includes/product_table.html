@@ -1,0 +1,33 @@
+{% for product in products %}
+<tr>
+    <td>
+        <input type="checkbox" class="product-checkbox" value="{{ product.id }}">
+    </td>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ product.kode_barang }}</td>
+    <td>{{ product.nama_barang }}</td>
+    <td>{{ product.kategori.nama }}</td>
+    <td>Rp {{ product.hp_beli|floatformat:0|default:"0" }}</td>
+    <td>Rp {{ product.h_jual|floatformat:0|default:"0" }}</td>
+    <td>{{ product.stok|default:"0" }}</td>
+    <td>Rp {{ product.total_hp_beli|floatformat:0|default:"0" }}</td>
+    <td>Rp {{ product.total_h_jual|floatformat:0|default:"0" }}</td>
+    <td>{{ product.tgl_terjual|date:"d/m/Y"|default:"-" }}</td>
+    <td>{{ product.tgl_stok_masuk|date:"d/m/Y"|default:"-" }}</td>
+    <td>
+        <button type="button" 
+                class="btn btn-sm btn-primary edit-product" 
+                data-id="{{ product.id }}"
+                onclick="editProduct({{ product.id }})">
+            <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-sm btn-danger delete-product" data-id="{{ product.id }}">
+            <i class="fas fa-trash"></i>
+        </button>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="12" class="text-center">Tidak ada produk ditemukan</td>
+</tr>
+{% endfor %} 

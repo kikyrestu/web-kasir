@@ -1,0 +1,164 @@
+{% load humanize %}
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Laporan Arus Kas</title>
+    <style>
+        @page {
+            size: portrait;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .company-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .company-logo {
+            max-width: 150px;
+            margin-bottom: 10px;
+        }
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .company-address {
+            font-size: 12px;
+            color: #666;
+        }
+        .report-title {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            text-transform: uppercase;
+        }
+        .period {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .amount {
+            text-align: right;
+        }
+        .section-header {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        .total-row {
+            font-weight: bold;
+            border-top: 2px solid #000;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="company-info">
+        <img src="data:image/png;base64,{{ logo_base64 }}" class="company-logo">
+        <div class="company-name">{{ company_name }}</div>
+        <div class="company-address">
+            {{ company_address }}<br>
+            Telp: {{ company_phone }}
+        </div>
+    </div>
+
+    <div class="report-title">Laporan Arus Kas</div>
+    <div class="period">
+        Periode: {{ start_date|date:"d/m/Y" }} s/d {{ end_date|date:"d/m/Y" }}
+    </div>
+
+    <table>
+        <tr class="section-header">
+            <td colspan="2">Arus Kas dari Aktivitas Operasi</td>
+        </tr>
+        <tr>
+            <td>Penerimaan dari Pelanggan</td>
+            <td class="amount">Rp {{ data.cash_from_customers|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td>Pembayaran ke Pemasok</td>
+            <td class="amount">Rp ({{ data.cash_to_suppliers|floatformat:0|intcomma }})</td>
+        </tr>
+        <tr>
+            <td>Pembayaran Beban Operasional</td>
+            <td class="amount">Rp ({{ data.operating_expenses|floatformat:0|intcomma }})</td>
+        </tr>
+        <tr class="total-row">
+            <td>Kas Bersih dari Aktivitas Operasi</td>
+            <td class="amount">Rp {{ data.net_operating_cash|floatformat:0|intcomma }}</td>
+        </tr>
+
+        <tr class="section-header">
+            <td colspan="2">Arus Kas dari Aktivitas Investasi</td>
+        </tr>
+        <tr>
+            <td>Pembelian Aset Tetap</td>
+            <td class="amount">Rp ({{ data.fixed_asset_purchase|floatformat:0|intcomma }})</td>
+        </tr>
+        <tr class="total-row">
+            <td>Kas Bersih dari Aktivitas Investasi</td>
+            <td class="amount">Rp {{ data.net_investing_cash|floatformat:0|intcomma }}</td>
+        </tr>
+
+        <tr class="section-header">
+            <td colspan="2">Arus Kas dari Aktivitas Pendanaan</td>
+        </tr>
+        <tr>
+            <td>Penerimaan Pinjaman</td>
+            <td class="amount">Rp {{ data.loan_received|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td>Pembayaran Pinjaman</td>
+            <td class="amount">Rp ({{ data.loan_payment|floatformat:0|intcomma }})</td>
+        </tr>
+        <tr class="total-row">
+            <td>Kas Bersih dari Aktivitas Pendanaan</td>
+            <td class="amount">Rp {{ data.net_financing_cash|floatformat:0|intcomma }}</td>
+        </tr>
+
+        <tr class="section-header">
+            <td>Kenaikan (Penurunan) Bersih Kas</td>
+            <td class="amount">Rp {{ data.net_cash_change|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td>Kas dan Setara Kas Awal Periode</td>
+            <td class="amount">Rp {{ data.beginning_cash|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr class="total-row">
+            <td>Kas dan Setara Kas Akhir Periode</td>
+            <td class="amount">Rp {{ data.ending_cash|floatformat:0|intcomma }}</td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        Dicetak pada: {{ current_datetime|date:"d/m/Y H:i" }}
+    </div>
+</body>
+</html> 

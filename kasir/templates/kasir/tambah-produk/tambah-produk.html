@@ -1,0 +1,223 @@
+{% extends 'kasir/dashboard.html' %}
+
+{% block title %}Tambah Produk Baru{% endblock %}
+{% block page_title %}Tambah Produk Baru{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Form Tambah Produk</h3>
+            </div>
+            <form method="POST" action="{% url 'kasir:add_product' %}" id="formTambahProduk">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="nama_barang">Nama Barang <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nama_barang" name="nama_barang" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="kategori">Kategori</label>
+                                <select class="form-control select2" 
+                                        id="kategori" 
+                                        name="kategori" 
+                                        style="width: 100%;">
+                                    <option value="">Pilih Kategori</option>
+                                    {% for kategori in categories %}
+                                        <option value="{{ kategori.nama }}">{{ kategori.nama }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="hp_beli">Harga Pokok Beli <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Rp</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="hp_beli" name="hp_beli" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="h_jual">Harga Jual <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Rp</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="h_jual" name="h_jual" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="stok">Stok Awal <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="stok" name="stok" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Total Nilai</label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="total_hp_beli" class="small">Total HP Beli</label>
+                                        <input type="text" class="form-control" id="total_hp_beli" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="total_h_jual" class="small">Total H Jual</label>
+                                        <input type="text" class="form-control" id="total_h_jual" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i> Simpan
+                    </button>
+                    <a href="{% url 'kasir:produk' %}" class="btn btn-secondary">
+                        <i class="fas fa-times mr-1"></i> Batal
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Inisialisasi Select2 dengan AJAX
+    $('#kategori').select2({
+        theme: 'bootstrap4',
+        width: '100%',
+        placeholder: 'Pilih atau ketik kategori baru',
+        allowClear: true,
+        tags: true, // Mengizinkan pembuatan tag baru
+        ajax: {
+            url: "{% url 'kasir:get_kategoris' %}",
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    term: params.term || '',
+                    page: params.page || 1
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data.results
+                };
+            },
+            cache: true
+        },
+        createTag: function(params) {
+            // Jangan buat tag untuk string kosong
+            if (params.term.trim() === '') {
+                return null;
+            }
+            return {
+                id: params.term,
+                text: params.term,
+                newTag: true
+            };
+        }
+    });
+
+    // Handle pembuatan kategori baru
+    $('#kategori').on('select2:select', function(e) {
+        var data = e.params.data;
+        
+        // Jika ini adalah tag baru
+        if (data.newTag) {
+            // Simpan kategori baru ke database
+            $.ajax({
+                url: "{% url 'kasir:tambah_kategori' %}",
+                type: 'POST',
+                data: {
+                    nama_kategori: data.text,
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Kategori baru berhasil ditambahkan',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: xhr.responseJSON?.message || 'Gagal menambahkan kategori baru'
+                    });
+                    // Hapus opsi yang baru dibuat jika gagal
+                    var selectElement = $('#kategori');
+                    var currentData = selectElement.select2('data');
+                    selectElement.empty();
+                    selectElement.select2('data', currentData.filter(item => !item.newTag));
+                }
+            });
+        }
+    });
+
+    // Kode lainnya tetap sama
+    function hitungTotal() {
+        var hp_beli = parseFloat($('#hp_beli').val()) || 0;
+        var h_jual = parseFloat($('#h_jual').val()) || 0;
+        var stok = parseFloat($('#stok').val()) || 0;
+
+        var total_hp_beli = hp_beli * stok;
+        var total_h_jual = h_jual * stok;
+
+        $('#total_hp_beli').val('Rp ' + total_hp_beli.toLocaleString('id-ID'));
+        $('#total_h_jual').val('Rp ' + total_h_jual.toLocaleString('id-ID'));
+    }
+
+    $('#hp_beli, #h_jual, #stok').on('input', hitungTotal);
+
+    // Form submission
+    $('#formTambahProduk').on('submit', function(e) {
+        e.preventDefault();
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Produk berhasil ditambahkan',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(function() {
+                        window.location.href = "{% url 'kasir:produk' %}";
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: response.message
+                    });
+                }
+            },
+            error: function(xhr, errmsg, err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Terjadi kesalahan saat menyimpan data'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Struk Pembayaran</title>
+    <style>
+        body {
+            font-family: monospace;
+            font-size: 12px;
+            margin: 0;
+            padding: 10px;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .mb-1 { margin-bottom: 5px; }
+        .border-bottom { border-bottom: 1px dashed #000; }
+        table { width: 100%; }
+        th, td { padding: 2px; }
+        .logo { 
+            max-width: 150px;
+            max-height: 60px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    {% if header %}
+    <div class="text-center mb-1">
+        {{ header|linebreaks }}
+    </div>
+    {% endif %}
+
+    <div class="text-center mb-1">
+        {% if show_logo and company_logo %}
+        <img src="{{ company_logo }}" alt="Logo" class="logo"><br>
+        {% endif %}
+        <strong>{{ company_name }}</strong><br>
+        {{ company_address|linebreaks }}
+        {% if company_phone %}Tel: {{ company_phone }}{% endif %}
+    </div>
+
+    <div class="border-bottom mb-1"></div>
+        <div class="mb-1">
+            No: #{{ transaksi.id }}<br>
+            Tanggal: {{ transaksi.tanggal|date:"d/m/Y H:i:s" }}<br>
+            Kasir: {{ request.user.username }}
+        </div>
+
+        <div class="border-bottom mb-1"></div>
+
+        <table class="mb-1">
+            <thead>
+                <tr>
+                    <th class="text-left">Item</th>
+                    <th class="text-right">Qty</th>
+                    <th class="text-right">Harga</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in details %}
+                <tr>
+                    <td>{{ item.barang.nama_barang }}</td>
+                    <td class="text-right">{{ item.qty }}</td>
+                    <td class="text-right">{{ item.harga|floatformat:0 }}</td>
+                    <td class="text-right">{{ item.get_subtotal|floatformat:0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="border-bottom mb-1"></div>
+
+        <table class="mb-1">
+            <tr>
+                <td>Total:</td>
+                <td class="text-right">{{ transaksi.total|floatformat:0 }}</td>
+            </tr>
+            <tr>
+                <td>Bayar:</td>
+                <td class="text-right">{{ transaksi.bayar|floatformat:0 }}</td>
+            </tr>
+            <tr>
+                <td>Kembali:</td>
+                <td class="text-right">{{ transaksi.kembalian|floatformat:0 }}</td>
+            </tr>
+        </table>
+
+        <div class="border-bottom mb-1"></div>
+
+        <div class="text-center">
+            Terima kasih atas kunjungan Anda<br>
+            Barang yang sudah dibeli tidak dapat ditukar/dikembalikan
+        </div>
+    {% endif %}
+
+    {% if footer %}
+    <div class="text-center mb-1">
+        {{ footer|linebreaks }}
+    </div>
+    {% endif %}
+
+    <div style="margin-bottom: 60px;"></div>
+</body>
+</html>

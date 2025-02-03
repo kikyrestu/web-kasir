@@ -1,0 +1,20 @@
+{% extends 'kasir/dashboard.html' %}
+
+{% block title %}{{ module.name }}{% endblock %}
+{% block page_title %}{{ module.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ module.name }}</h3>
+            </div>
+            <div class="card-body">
+                <!-- Module content goes here -->
+                <p>Halaman {{ module.name }} dalam pengembangan</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

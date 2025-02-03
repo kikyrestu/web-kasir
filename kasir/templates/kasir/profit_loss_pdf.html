@@ -1,0 +1,141 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Laporan Laba Rugi</title>
+    <style>
+        @page {
+            size: portrait;
+            margin: 1.5cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+        }
+        .period {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .amount {
+            text-align: right;
+        }
+        .section-header {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        .total-row {
+            font-weight: bold;
+            border-top: 2px solid #000;
+        }
+        .profit {
+            background-color: #e8f5e9;
+            font-weight: bold;
+        }
+        .loss {
+            background-color: #ffebee;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>LAPORAN LABA RUGI</h1>
+    </div>
+    <div class="period">
+        Periode: {{ start_date }} s/d {{ end_date }}
+    </div>
+
+    <table>
+        <tr class="section-header">
+            <td colspan="2">Pendapatan</td>
+        </tr>
+        <tr>
+            <td>Penjualan Kotor</td>
+            <td class="amount">Rp {{ data.gross_sales|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td>Retur Penjualan</td>
+            <td class="amount">Rp {{ data.sales_returns|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr class="total-row">
+            <td>Penjualan Bersih</td>
+            <td class="amount">Rp {{ data.net_sales|floatformat:0|intcomma }}</td>
+        </tr>
+
+        <tr class="section-header">
+            <td colspan="2">Harga Pokok Penjualan</td>
+        </tr>
+        <tr>
+            <td>Persediaan Awal</td>
+            <td class="amount">Rp {{ data.beginning_inventory|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td>Pembelian</td>
+            <td class="amount">Rp {{ data.purchases|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td>Persediaan Akhir</td>
+            <td class="amount">Rp {{ data.ending_inventory|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr class="total-row">
+            <td>Total HPP</td>
+            <td class="amount">Rp {{ data.total_cogs|floatformat:0|intcomma }}</td>
+        </tr>
+
+        <tr class="{% if data.gross_profit >= 0 %}profit{% else %}loss{% %}">
+            <td>Laba Kotor</td>
+            <td class="amount">Rp {{ data.gross_profit|floatformat:0|intcomma }}</td>
+        </tr>
+
+        <tr class="section-header">
+            <td colspan="2">Beban Operasional</td>
+        </tr>
+        <tr>
+            <td>Beban Gaji</td>
+            <td class="amount">Rp {{ data.salary_expense|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td>Beban Utilitas</td>
+            <td class="amount">Rp {{ data.utility_expense|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td>Beban Lain-lain</td>
+            <td class="amount">Rp {{ data.other_expense|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr class="total-row">
+            <td>Total Beban</td>
+            <td class="amount">Rp {{ data.total_expense|floatformat:0|intcomma }}</td>
+        </tr>
+
+        <tr class="{% if data.net_profit >= 0 %}profit{% else %}loss{% %}">
+            <td>Laba Bersih</td>
+            <td class="amount">Rp {{ data.net_profit|floatformat:0|intcomma }}</td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 30px; font-size: 10px; text-align: center;">
+        Dicetak pada: {% now "d/m/Y H:i" %}
+    </div>
+</body>
+</html> 
