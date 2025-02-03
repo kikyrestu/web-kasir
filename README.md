@@ -60,7 +60,7 @@ Web Kasir adalah sistem kasir berbasis web yang dirancang untuk membantu pengelo
    ```
 
 ## 📸 Screenshot Tampilan
-![Screenshot](https://via.placeholder.com/800x400?text=Screenshot+Web+Kasir)
+![Screenshot](https://ibb.co.com/GfyQwrdx)
 
 ## 📜 Dokumentasi API
 Untuk integrasi dengan sistem lain, silakan lihat dokumentasi API di [`docs/API.md`](docs/API.md).
