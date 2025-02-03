@@ -1,140 +1,93 @@
-Web Kasir POS System
-GitHub last commit
-GitHub repo size
-GitHub issues
+# Web Kasir
 
-Web Kasir POS System adalah aplikasi berbasis web yang dibangun menggunakan Django , dirancang untuk membantu pengelolaan transaksi penjualan secara efisien. Aplikasi ini cocok digunakan untuk toko ritel, restoran, atau bisnis kecil lainnya.
+![GitHub repo size](https://img.shields.io/github/repo-size/kikyrestu/web-kasir)
+![GitHub stars](https://img.shields.io/github/stars/kikyrestu/web-kasir?style=social)
+![GitHub license](https://img.shields.io/github/license/kikyrestu/web-kasir)
+![GitHub issues](https://img.shields.io/github/issues/kikyrestu/web-kasir)
 
-Fitur Utama
-Manajemen Produk : Tambah, edit, dan hapus produk dengan mudah.
-Transaksi Penjualan : Proses pembelian pelanggan secara cepat dan akurat.
-Laporan Penjualan : Lihat laporan harian, mingguan, atau bulanan untuk analisis bisnis.
-Multi-User Support : Dukungan untuk beberapa pengguna dengan peran yang berbeda.
-Antarmuka Ramah Pengguna : Desain modern dan intuitif untuk pengalaman pengguna terbaik.
-Teknologi yang Digunakan
-Framework : Django (Python)
-Database : SQLite / PostgreSQL / MySQL
-Frontend : HTML, CSS, JavaScript (Bootstrap)
-Tools Tambahan : Git, GitHub Actions (opsional)
-Instalasi Lokal
-Ikuti langkah-langkah di bawah ini untuk menjalankan aplikasi ini di lingkungan lokal:
+Web Kasir adalah sistem kasir berbasis web yang dirancang untuk membantu pengelolaan transaksi di toko atau bisnis kecil dengan fitur yang lengkap dan mudah digunakan.
 
-Clone Repositori
-bash
-Copy
-1
-2
-git clone https://github.com/kikyrestu/web-kasir.git
-cd web-kasir
-Instalasi Dependensi
-Pastikan Anda sudah menginstal Python (versi 3.6 atau lebih tinggi) dan pip. Kemudian instal dependensi proyek:
-bash
-Copy
-1
-pip install -r requirements.txt
-Konfigurasi Database
-Salin file .env.example menjadi .env:
-bash
-Copy
-1
-cp .env.example .env
-Edit file .env untuk menyesuaikan konfigurasi database:
-env
-Copy
-1
-2
-3
-4
-5
-6
-7
-8
-SECRET_KEY=your_secret_key_here
-DEBUG=True
-DB_ENGINE=django.db.backends.sqlite3
-DB_NAME=db.sqlite3
-DB_USER=
-DB_PASSWORD=
-DB_HOST=
-DB_PORT=
-Jika Anda menggunakan database seperti PostgreSQL atau MySQL, sesuaikan nilai DB_ENGINE, DB_NAME, DB_USER, dll.
-Jalankan Migrasi Database
-Jalankan migrasi untuk membuat tabel-tabel di database:
-bash
-Copy
-1
-python manage.py migrate
-Buat Superuser (Opsional)
-Untuk mengakses admin panel Django, buat superuser:
-bash
-Copy
-1
-python manage.py createsuperuser
-Jalankan Server Pengembangan
-Mulai server pengembangan Django:
-bash
-Copy
-1
-python manage.py runserver
-Akses Aplikasi
-Buka browser dan kunjungi:
-Copy
-1
-http://localhost:8000
-Untuk admin panel:
-Copy
-1
-http://localhost:8000/admin
-Screenshots
-Berikut adalah beberapa tampilan dari aplikasi Web Kasir POS System:
+## 🎯 Fitur Utama
+- ✅ Manajemen Produk (Tambah, Edit, Hapus, Stok, Kategori)
+- ✅ Manajemen Transaksi (Pencatatan, Edit, Refund)
+- ✅ Cetak Struk via Printer Thermal
+- ✅ Laporan Penjualan (Harian, Bulanan, Tahunan)
+- ✅ Manajemen Pelanggan
+- ✅ Multi-user dengan Hak Akses
+- ✅ Dashboard Statistik Penjualan
+- ✅ Integrasi Barcode Scanner
+- ✅ Export Data ke Excel/PDF
+- ✅ Notifikasi Stok Menipis
 
-Dashboard
-Halaman Dashboard
+## 📌 Teknologi yang Digunakan
+- **Frontend**: HTML, CSS, JavaScript, Vue.js (Opsional)
+- **Backend**: Python, Django
+- **Database**: PostgreSQL, SQLite (Opsional)
+- **Libraries**: Django Rest Framework, Bootstrap, jQuery, Axios
+- **Auth & Security**: Django Authentication, JWT
+- **Deployment**: Docker, Nginx, Gunicorn
 
-Transaksi
-Halaman Transaksi Penjualan
+## 🔧 Cara Instalasi
 
-(Tambahkan gambar screenshot aplikasi Anda di folder screenshots.)
+### 1. Clone Repositori
+   ```sh
+   git clone https://github.com/kikyrestu/web-kasir.git
+   ```
+### 2. Masuk ke Direktori Proyek
+   ```sh
+   cd web-kasir
+   ```
+### 3. Buat Virtual Environment & Install Dependencies
+   ```sh
+   python -m venv venv
+   source venv/bin/activate  # Untuk Linux/Mac
+   venv\Scripts\activate  # Untuk Windows
+   pip install -r requirements.txt
+   ```
+### 4. Konfigurasi Environment
+   Salin file `.env.example` menjadi `.env` dan sesuaikan konfigurasi database.
+   ```sh
+   cp .env.example .env
+   ```
+### 5. Migrasi dan Seeder Database
+   ```sh
+   python manage.py migrate
+   python manage.py loaddata seed_data.json
+   ```
+### 6. Jalankan Server
+   ```sh
+   python manage.py runserver
+   ```
 
-Kontribusi
-Kami sangat terbuka untuk kontribusi! Jika Anda ingin berkontribusi, silakan ikuti langkah-langkah berikut:
+## 📸 Screenshot Tampilan
+![Screenshot](https://via.placeholder.com/800x400?text=Screenshot+Web+Kasir)
 
-Fork repositori ini.
-Buat branch baru:
-bash
-Copy
-1
-git checkout -b fitur/nama-fitur
-Commit perubahan Anda:
-bash
-Copy
-1
-git commit -m "Tambah fitur X"
-Push ke branch:
-bash
-Copy
-1
-git push origin fitur/nama-fitur
-Buat Pull Request (PR) di repositori utama.
-Lisensi
-Proyek ini dilisensikan di bawah MIT License .
+## 📜 Dokumentasi API
+Untuk integrasi dengan sistem lain, silakan lihat dokumentasi API di [`docs/API.md`](docs/API.md).
 
-Kontak
-Untuk pertanyaan lebih lanjut atau saran, silakan hubungi saya:
+## 🤝 Kontribusi
+Kami menyambut kontribusi dari siapa saja! Ikuti langkah-langkah berikut untuk berkontribusi:
 
-Email: kikyrestu@example.com
-LinkedIn: Profil LinkedIn Anda
-GitHub: @kikyrestu
-Cara Menambahkan README ke Repositori
-Buat file bernama README.md di direktori utama repositori Anda.
-Salin dan tempel kode di atas ke dalam file tersebut.
-Commit dan push file ke GitHub:
-bash
-Copy
-1
-2
-3
-git add README.md
-git commit -m "Tambah README untuk Django"
-git push origin main
+1. Fork repositori ini
+2. Buat branch fitur baru (`git checkout -b fitur-baru`)
+3. Commit perubahan (`git commit -m 'Menambahkan fitur baru'`)
+4. Push ke branch (`git push origin fitur-baru`)
+5. Buat Pull Request
 
+## 🛠 Roadmap
+- [ ] Integrasi dengan Payment Gateway
+- [ ] Mode Offline
+- [ ] Pembuatan Aplikasi Mobile
+- [ ] Integrasi AI untuk Prediksi Stok
+
+## 📄 Lisensi
+Proyek ini dilisensikan di bawah lisensi MIT - lihat [LICENSE](LICENSE) untuk detail lebih lanjut.
+
+## 📞 Kontak & Dukungan
+Jika Anda memiliki pertanyaan atau butuh bantuan, silakan hubungi:
+- 📧 Email: support@webkasir.com
+- 💬 Telegram: [@webkasir_support](https://t.me/webkasir_support)
+- 🐦 Twitter: [@webkasir](https://twitter.com/webkasir)
+
+---
+Dibuat dengan ❤️ oleh [kikyrestu](https://github.com/kikyrestu)
